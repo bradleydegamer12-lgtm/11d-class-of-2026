@@ -527,6 +527,11 @@ document.querySelectorAll('.nav-tab').forEach(tab=>{tab.addEventListener('click'
 
 let toastTimer;function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);}
 renderNotes();
+    if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+    }
 </script>
 </body>
   </html>

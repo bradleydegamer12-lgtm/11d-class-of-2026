@@ -73,9 +73,14 @@ const firebaseConfig = {
   messagingSenderId: "432147405359",
   appId: "1:432147405359:web:5377332262b6fe63e8c4da"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const hwRef = db.ref("homework");
+var db, hwRef;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  hwRef = db.ref("homework");
+} catch(e) {
+  console.log('Firebase error:', e);
+}
 const TEACHER_PASSWORD = "11D2026";
 
 var IC={reg:'<svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>',eng:'<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',eco:'<svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',hist:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',bs:'<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>',mlit:'<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4"/></svg>',hl:'<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',lo:'<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',lunch:'<svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>',free:'<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>',paper:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>',play:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>'};
@@ -116,7 +121,7 @@ function hideChrome(){bnav.classList.add('nav-hide');elTopnav.classList.add('nav
 function updateStreak(){var today=new Date().toISOString().split('T')[0];if(streak.lastDate===today)return;var y=new Date(Date.now()-86400000).toISOString().split('T')[0];if(streak.lastDate===y)streak.current++;else streak.current=1;streak.lastDate=today;if(streak.current>streak.longest)streak.longest=streak.current;DB.set('g11d_streak',streak)}
 function toggleDark(){darkMode=!darkMode;document.documentElement.setAttribute('data-theme',darkMode?'dark':'light');DB.set('g11d_dark',darkMode);if(moreTab==='settings')renderMoreSettings()}
 
-function startHWListener(){if(hwListenerStarted)return;hwListenerStarted=true;hwRef.orderByChild('timestamp').on('value',function(snapshot){var data=snapshot.val();if(!data){assignments=[]}else{var arr=[];Object.keys(data).forEach(function(key){var item=data[key];item.id=key;arr.push(item)});arr.sort(function(a,b){return new Date(a.dueDate)-new Date(b.dueDate)});assignments=arr}renderHome();if(moreTab==='homework')renderMoreHomework()})}
+function startHWListener(){if(hwListenerStarted||!hwRef)return;hwListenerStarted=true;hwRef.orderByChild('timestamp').on('value',function(snapshot){var data=snapshot.val();if(!data){assignments=[]}else{var arr=[];Object.keys(data).forEach(function(key){var item=data[key];item.id=key;arr.push(item)});arr.sort(function(a,b){return new Date(a.dueDate)-new Date(b.dueDate)});assignments=arr}renderHome();if(moreTab==='homework')renderMoreHomework()})}
 
 function addHW(){var subj=document.getElementById('hwSubj').value,title=document.getElementById('hwTitle').value.trim(),due=document.getElementById('hwDue').value,desc=document.getElementById('hwDesc').value.trim(),pwEl=document.getElementById('hwPw'),pw=pwEl?pwEl.value:'',errEl=document.getElementById('hwPwErr');if(errEl)errEl.classList.remove('show');if(!title||!due)return;if(pw!==TEACHER_PASSWORD){if(errEl){errEl.textContent='Wrong teacher password!';errEl.classList.add('show')}return}hwRef.push({subject:subj,title:title,dueDate:due,description:desc,addedBy:currentUser.nm,timestamp:firebase.database.ServerValue.TIMESTAMP}).then(function(){document.getElementById('hwTitle').value='';document.getElementById('hwDesc').value='';if(pwEl)pwEl.value=''})}
 

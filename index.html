@@ -125,7 +125,7 @@ function startHWListener(){if(hwListenerStarted||!hwRef)return;hwListenerStarted
 
 function addHW(){var subj=document.getElementById('hwSubj').value,title=document.getElementById('hwTitle').value.trim(),due=document.getElementById('hwDue').value,desc=document.getElementById('hwDesc').value.trim(),pwEl=document.getElementById('hwPw'),pw=pwEl?pwEl.value:'',errEl=document.getElementById('hwPwErr');if(errEl)errEl.classList.remove('show');if(!title||!due)return;if(pw!==TEACHER_PASSWORD){if(errEl){errEl.textContent='Wrong teacher password!';errEl.classList.add('show')}return}hwRef.push({subject:subj,title:title,dueDate:due,description:desc,addedBy:currentUser.nm,timestamp:firebase.database.ServerValue.TIMESTAMP}).then(function(){document.getElementById('hwTitle').value='';document.getElementById('hwDesc').value='';if(pwEl)pwEl.value=''})}
 
-function delHW(firebaseKey){if(!confirm('Delete this homework?'))return;hwRef.child(firebaseKey).remove()}
+function startHWListener(){if(hwListenerStarted||!hwRef)return;hwRef.child(firebaseKey).remove()}
 
 function addGrade(){var subj=document.getElementById('grSubj').value,name=document.getElementById('grName').value.trim(),mark=document.getElementById('grMark').value,total=document.getElementById('grTotal').value;if(!name||!mark||!total)return;if(!grades[subj])grades[subj]=[];grades[subj].push({name:name,mark:parseInt(mark),total:parseInt(total),date:new Date().toISOString().split('T')[0]});DB.set('g11d_grades',grades);document.getElementById('grName').value='';document.getElementById('grMark').value='';renderMoreGrades()}
 function getAvg(subj){if(!grades[subj]||!grades[subj].length)return 0;var t=grades[subj].reduce(function(s,g){return s+(g.mark/g.total*100)},0);return Math.round(t/grades[subj].length)}

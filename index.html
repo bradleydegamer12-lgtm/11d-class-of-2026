@@ -80,14 +80,15 @@ const{useState,useEffect,useRef,useCallback,useContext,createContext}=React;
    FIREBASE CONFIG — PASTE YOUR CONFIG HERE
    ═══════════════════════════════════════════ */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBbSsNYSTyK87ufHvgKxJXi-OIEC_adwKg",
+  authDomain: "g11-d7bb6.firebaseapp.com",
+  databaseURL: "https://g11-d7bb6-default-rtdb.firebaseio.com",
+  projectId: "g11-d7bb6",
+  storageBucket: "g11-d7bb6.firebasestorage.app",
+  messagingSenderId: "432147405359",
+  appId: "1:432147405359:web:c6a01c6b0582c07fe8c4da",
+  measurementId: "G-ZZNB14ZB2F"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();

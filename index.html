@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+   // BEFORE (in Header function):
+<div className="flex items-center justify-center rounded-lg" style={{width:30,height:30,background:'linear-gradient(135deg,#10b981,#059669)'}}>
+  <Icon name="graduation-cap" size={17} className="text-white"/>
+</div>
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
@@ -53,6 +57,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#060b14;color:#f0fdf4
 .login-input::placeholder{color:#475569}
 </style>
 </head>
+   // AFTER:
+<div className="flex items-center justify-center rounded-xl font-heading" style={{width:36,height:36,background:'linear-gradient(135deg,#10b981,#059669)',fontSize:15,fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>
+  G11
+</div>
 <body>
 <div id="loader" style="position:fixed;inset:0;background:#060b14;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px">
 <div style="width:40px;height:40px;border:3px solid rgba(16,185,129,.2);border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite"></div>

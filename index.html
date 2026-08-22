@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Class 11D Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{heading:['Outfit','sans-serif'],body:['Plus Jakarta Sans','sans-serif']}}}}</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--glass-bg:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#060b14;color:#f0fdf4;overflow-x:hidden;min-height:100vh;min-height:100dvh;background-image:radial-gradient(ellipse at 15% 50%,rgba(16,185,129,.1) 0%,transparent 50%),radial-gradient(ellipse at 85% 20%,rgba(52,211,153,.06) 0%,transparent 40%)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(16,185,129,.25);border-radius:2px}
+.font-heading{font-family:'Outfit',sans-serif}
+.glass{background:var(--glass-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--glass-border);box-shadow:0 8px 32px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05)}
+.glass-hover{transition:all .3s cubic-bezier(.4,0,.2,1)}.glass-hover:active{transform:scale(.98)}@media(hover:hover){.glass-hover:hover{background:rgba(255,255,255,.07);border-color:rgba(16,185,129,.2);box-shadow:0 12px 40px rgba(0,0,0,.25);transform:translateY(-2px)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(16,185,129,.3),0 4px 20px rgba(0,0,0,.3)}50%{box-shadow:0 0 24px rgba(16,185,129,.5),0 4px 20px rgba(0,0,0,.3)}}
+@keyframes typing{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes slideInLeft{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes barAnim{0%{height:10%}50%{height:var(--h)}100%{height:10%}}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}50%{box-shadow:0 0 0 6px rgba(16,185,129,0)}}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-20px) scale(1.1)}}
+@keyframes orbFloat2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,30px) scale(1.05)}}
+.anim-fade-up{animation:fadeUp .5s ease forwards;opacity:0}
+.flashcard{perspective:800px;height:110px}
+.flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flashcard-inner.flipped{transform:rotateY(180deg)}
+.flashcard-front,.flashcard-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;display:flex;align-items:center;justify-content:center;padding:14px;text-align:center}
+.flashcard-back{transform:rotateY(180deg)}
+.range-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.08);outline:none}
+.range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#10b981;cursor:pointer;box-shadow:0 0 12px rgba(16,185,129,.4)}
+.vis-section{max-height:2000px;opacity:1;transition:all .4s ease}.hid-section{max-height:0;opacity:0;overflow:hidden;transition:all .3s ease}
+.chat-scroll::-webkit-scrollbar{width:3px}.chat-scroll::-webkit-scrollbar-thumb{background:rgba(16,185,129,.2);border-radius:2px}
+.day-tabs::-webkit-scrollbar{display:none}.day-tabs{scrollbar-width:none}
+.live-bar{animation:livePulse 2s ease-in-out infinite}
+.login-input{width:100%;padding:12px 16px 12px 44px;border-radius:14px;font-size:14px;outline:none;transition:.3s;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#ecfdf5}
+.login-input:focus{border-color:rgba(16,185,129,.4);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+.login-input::placeholder{color:#475569}
+.admin-input{width:100%;padding:10px 14px;border-radius:12px;font-size:13px;outline:none;transition:.3s;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#ecfdf5}
+.admin-input:focus{border-color:rgba(16,185,129,.4);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+.admin-input::placeholder{color:#475569}
+textarea.admin-input{resize:vertical;min-height:60px;font-family:'Plus Jakarta Sans',sans-serif}
+</style>
+</head>
+<body>
+<div id="loader" style="position:fixed;inset:0;background:#060b14;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px">
+<div style="width:40px;height:40px;border:3px solid rgba(16,185,129,.2);border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite"></div>
+<p class="font-heading" style="color:#6ee7b7;font-size:13px;letter-spacing:3px;text-transform:uppercase">Loading</p>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const{useState,useEffect,useRef,useCallback,useContext,createContext}=React;
+
+const firebaseConfig={apiKey:"AIzaSyBbSsNYSTyK87ufHvgKxJXi-OIEC_adwKg",authDomain:"g11-d7bb6.firebaseapp.com",databaseURL:"https://g11-d7bb6-default-rtdb.firebaseio.com",projectId:"g11-d7bb6",storageBucket:"g11-d7bb6.firebasestorage.app",messagingSenderId:"432147405359",appId:"1:432147405359:web:c6a01c6b0582c07fe8c4da",measurementId:"G-ZZNB14ZB2F"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+const TEACHER_PASSCODE="G11D2025";
+
+/* ===== CONTEXTS ===== */
+const AuthCtx=createContext();
+function useAuth(){return useContext(AuthCtx)}
+function AuthProvider({children}){
+  const[user,setUser]=useState(null);
+  const[loading,setLoading]=useState(true);
+  useEffect(()=>{
+    document.getElementById('loader').style.display='none';
+    const unsub=auth.onAuthStateChanged(u=>{setUser(u);setLoading(false)});
+    return unsub;
+  },[]);
+  return <AuthCtx.Provider value={{user,loading}}>{children}</AuthCtx.Provider>
+}
+
+const StatsCtx=createContext();
+function useStats(){return useContext(StatsCtx)}
+function StatsProvider({children}){
+  const{user}=useAuth();
+  const key=user?`11d-stats-${user.uid}`:'11d-stats-guest';
+  const[stats,setStats]=useState(()=>{try{const s=localStorage.getItem(key);return s?JSON.parse(s):{...INIT_STATS}}catch(e){return{...INIT_STATS}}});
+  useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(stats))}catch(e){}},[stats,key]);
+  useEffect(()=>{const now=new Date();const h=now.getHours();setStats(prev=>({...prev,earliestStudy:prev.earliestStudy||h<8,latestStudy:prev.latestStudy||h>=22}))},[]);
+  const update=p=>setStats(prev=>({...prev,...p}));
+  return <StatsCtx.Provider value={{stats,update}}>{children}</StatsCtx.Provider>
+}
+
+const TeacherCtx=createContext();
+function useTeacher(){return useContext(TeacherCtx)}
+function TeacherProvider({children}){
+  const[isTeacher,setIsTeacher]=useState(()=>localStorage.getItem('11d-teacher')==='true');
+  const verify=code=>{if(code===TEACHER_PASSCODE){setIsTeacher(true);localStorage.setItem('11d-teacher','true');return true}return false};
+  const exit=()=>{setIsTeacher(false);localStorage.removeItem('11d-teacher')};
+  return <TeacherCtx.Provider value={{isTeacher,verify,exit}}>{children}</TeacherCtx.Provider>
+}
+
+/* ===== HELPERS ===== */
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function uidColor(uid){const c=['#10b981','#34d399','#6ee7b7','#60a5fa','#a78bfa','#f472b6','#fbbf24','#22d3ee','#f97316'];let h=0;for(let i=0;i<(uid||'x').length;i++)h=(uid||'x').charCodeAt(i)+((h<<5)-h);return c[Math.abs(h)%c.length]}
+function timeAgo(ts){if(!ts)return'Just now';const d=ts.toDate?ts.toDate():new Date(ts);const s=Math.floor((Date.now()-d.getTime())/1000);if(s<60)return'Just now';if(s<3600)return`${Math.floor(s/60)}m ago`;if(s<86400)return`${Math.floor(s/3600)}h ago`;return`${Math.floor(s/86400)}d ago`}
+function fmtDate(d){if(!return'—';try{const dt=new Date(d);return dt.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})}catch(e){return d}}
+function daysUntil(d){if(!d)return 999;const now=new Date();now.setHours(0,0,0,0);const target=new Date(d);target.setHours(0,0,0,0);return Math.ceil((target-now)/864e5)}
+
+const INIT_STATS={quizCorrect:0,quizTotal:0,pomodoros:0,studyHours:37,postsCount:0,streakDays:0,lastVisit:null,languages:[],earliestStudy:false,latestStudy:false};
+
+/* ===== DATA ===== */
+const SUBJECT_COLORS={ENG:{bg:'rgba(96,165,250,.12)',border:'#60a5fa',text:'#93c5fd',full:'English'},ECO:{bg:'rgba(52,211,153,.12)',border:'#34d399',text:'#6ee7b7',full:'Economics'},HIST:{bg:'rgba(251,191,36,.12)',border:'#fbbf24',text:'#fcd34d',full:'History'},BS:{bg:'rgba(16,185,129,.12)',border:'#10b981',text:'#6ee7b7',full:'Business Studies'},MLIT:{bg:'rgba(167,139,250,.12)',border:'#a78bfa',text:'#c4b5fd',full:'Mathematical Literacy'},VERNC:{bg:'rgba(244,114,182,.12)',border:'#f472b6',text:'#f9a8d4',full:'Vernacular'},LO:{bg:'rgba(34,211,238,.12)',border:'#22d3ee',text:'#67e8f9',full:'Life Orientation'},FREE:{bg:'rgba(255,255,255,.03)',border:'rgba(255,255,255,.08)',text:'#475569',full:'Free Period'},END:{bg:'rgba(255,255,255,.03)',border:'rgba(255,255,255,.08)',text:'#475569',full:'After School'}};
+const SUBJECT_MAP={business:'BS',economics:'ECO',english:'ENG',math:'MLIT',lo:'LO',isizulu:'VERNC',sesotho:'VERNC',tshivenda:'VERNC',xitsonga:'VERNC',history:'HIST'};
+const SUBJECT_NAMES={business:'Business Studies',economics:'Economics',english:'English',math:'Mathematical Literacy',lo:'Life Orientation',isizulu:'isiZulu',sesotho:'Sesotho',tshivenda:'Tshivenda',xitsonga:'Xitsonga',history:'History'};
+const TIMETABLE={monday:[{time:'08:00 – 09:00',sub:'ENG'},{time:'09:00 – 10:00',sub:'ECO'},{time:'10:00 – 11:00',sub:'HIST'},{time:'12:00 – 13:00',sub:'BS'},{time:'13:00 – 14:00',sub:'MLIT'},{time:'14:00 – 15:00',sub:'VERNC'}],tuesday:[{time:'08:00 – 09:00',sub:'ENG'},{time:'09:00 – 10:00',sub:'HIST'},{time:'10:00 – 11:00',sub:'BS'},{time:'12:00 – 13:00',sub:'MLIT'},{time:'13:00 – 14:00',sub:'VERNC'},{time:'14:00 – 15:00',sub:'ECO'}],wednesday:[{time:'08:00 – 09:00',sub:'MLIT'},{time:'09:00 – 10:00',sub:'ENG'},{time:'10:00 – 11:00',sub:'ECO'},{time:'12:00 – 13:00',sub:'VERNC'},{time:'13:00 – 14:00',sub:'HIST'},{time:'14:00 – 15:00',sub:'FREE'}],thursday:[{time:'08:00 – 09:00',sub:'MLIT'},{time:'09:00 – 10:00',sub:'ENG'},{time:'10:00 – 11:00',sub:'LO'},{time:'12:00 – 13:00',sub:'BS'},{time:'13:00 – 14:00',sub:'HIST'},{time:'14:00 – 15:00',sub:'VERNC'}],friday1:[{time:'08:00 – 09:00',sub:'LO'},{time:'09:00 – 10:00',sub:'MLIT'},{time:'10:00 – 11:00',sub:'ECO'},{time:'12:00 – 15:00',sub:'FREE'}],friday2:[{time:'08:00 – 09:00',sub:'BS'},{time:'09:00 – 10:00',sub:'ENG'},{time:'10:00 – 11:00',sub:'VERNC'},{time:'12:00 – 13:00',sub:'END'}]};
+const DAY_TABS=[{key:'monday',label:'Mon'},{key:'tuesday',label:'Tue'},{key:'wednesday',label:'Wed'},{key:'thursday',label:'Thu'},{key:'friday1',label:'1st Fri'},{key:'friday2',label:'2nd Fri'}];
+function getActiveDay(){const d=new Date().getDay();if(d===1)return'monday';if(d===2)return'tuesday';if(d===3)return'wednesday';if(d===4)return'thursday';if(d===5){const dt=new Date().getDate(),fd=new Date(new Date().getFullYear(),new Date().getMonth(),1).getDay(),w=Math.ceil((dt+(fd<=5?fd:7-fd))/7);return w%2===1?'friday1':'friday2'}return'monday'}
+function getCurrentPeriod(periods){const now=new Date(),mins=now.getHours()*60+now.getMinutes();for(let i=0;i<periods.length;i++){const[sh,sm]=periods[i].time.split('–')[0].trim().split(':').map(Number),[eh,em]=periods[i].time.split('–')[1].trim().split(':').map(Number);if(mins>=sh*60+sm&&mins<eh*60+em)return{i,remaining:eh*60+em-mins}}return null}
+
+const SUBJECTS=[{id:'business',name:'Business Studies',icon:'briefcase',color:'#10b981',hours:5,progress:65,resources:['2025 Past Paper','Study Guide Ch.1-3','Key Terms Glossary']},{id:'economics',name:'Economics',icon:'trending-up',color:'#34d399',hours:4,progress:50,resources:['2025 Past Paper','Circular Flow Diagram','Exam Tips']},{id:'english',name:'English',icon:'book-open',color:'#6ee7b7',hours:6,progress:75,resources:['Essay Writing Guide','Poetry Analysis','Grammar Workbook']},{id:'math',name:'Mathematical Literacy',icon:'calculator',color:'#059669',hours:7,progress:80,resources:['Formula Sheet','2025 Past Paper','Practice Set']},{id:'lo',name:'Life Orientation',icon:'heart',color:'#10b981',hours:2,progress:90,resources:['Study Notes','Exam Question Bank']},{id:'isizulu',name:'isiZulu',icon:'languages',color:'#34d399',hours:3,progress:60,resources:['Past Papers','Vocabulary List','Grammar Guide'],vocab:[{w:'Sawubona',m:'Hello',p:'sah-woo-BOH-nah'},{w:'Ngiyabonga',m:'Thank you',p:'ngee-yah-BOH-ngah'},{w:'Yebo',m:'Yes',p:'YEH-boh'},{w:'Cha',m:'No',p:'CHAH'}]},{id:'sesotho',name:'Sesotho',icon:'languages',color:'#6ee7b7',hours:3,progress:55,resources:['Past Papers','Vocabulary List','Oral Prep'],vocab:[{w:'Lumela',m:'Hello',p:'loo-MEH-lah'},{w:'Ke a leboha',m:'Thank you',p:'keh ah leh-BOH-hah'},{w:'Ee',m:'Yes',p:'EH-eh'},{w:'Tjhe',m:'No',p:'CHEH'}]},{id:'tshivenda',name:'Tshivenda',icon:'languages',color:'#059669',hours:3,progress:45,resources:['Past Papers','Vocabulary List','Grammar Notes'],vocab:[{w:'Ndaa',m:'Hello',p:'NDAH-ah'},{w:'Ndo livhuwa',m:'Thank you',p:'ndoh leev-HWAH'},{w:'Ee',m:'Yes',p:'EH'},{w:'Hani',m:'No',p:'HAH-nee'}]},{id:'xitsonga',name:'Xitsonga',icon:'languages',color:'#10b981',hours:3,progress:40,resources:['Past Papers','Vocabulary List','Study Notes'],vocab:[{w:'Avuxeni',m:'Hello',p:'ah-voo-SHEH-nee'},{w:'Inkomu',m:'Thank you',p:'een-KOH-moo'},{w:'Ina',m:'Yes',p:'EE-nah'},{w:'E-e',m:'No',p:'EH-eh'}]},{id:'history',name:'History',icon:'landmark',color:'#34d399',hours:4,progress:70,resources:['2025 Past Paper','Timeline Notes','Source-Based Q Guide']}];
+
+const FLASHCARDS={business:[{q:'What are the 4 P\'s of Marketing?',a:'Product, Price, Place, Promotion'},{q:'What is unlimited liability?',a:'Owner personally responsible for all debts'},{q:'Maximum partners in a partnership?',a:'20'},{q:'What is a business plan?',a:'Document outlining goals, strategies, financial forecasts'},{q:'Profit formula?',a:'Profit = Revenue − Costs'}],economics:[{q:'Define demand.',a:'Quantity consumers willing to buy at various prices'},{q:'What is supply?',a:'Quantity producers willing to sell at various prices'},{q:'What is GDP?',a:'Gross Domestic Product — total value of goods/services'},{q:'What is inflation?',a:'General increase in prices reducing purchasing power'},{q:'What is opportunity cost?',a:'Value of next best alternative foregone'}],english:[{q:'What is a metaphor?',a:'Direct comparison without like/as'},{q:'What is a simile?',a:'Comparison using like or as'},{q:'What is personification?',a:'Giving human qualities to non-human things'},{q:'What is alliteration?',a:'Repetition of initial consonant sounds'},{q:'Purpose of topic sentence?',a:'Introduce main idea of a paragraph'}],math:[{q:'Percentage change formula?',a:'((New−Old)/Old)×100'},{q:'What is the mean?',a:'Sum of values ÷ number of values'},{q:'Simple interest formula?',a:'I = P × r × t'},{q:'What is the median?',a:'Middle value in ordered data'},{q:'Convert fraction to %?',a:'Divide top by bottom, multiply by 100'}],lo:[{q:'Three types of well-being?',a:'Physical, Mental/Emotional, Social'},{q:'What is the Bill of Rights?',a:'Chapter 2 of SA Constitution protecting rights'},{q:'SMART goals?',a:'Specific, Measurable, Achievable, Realistic, Time-bound'}],isizulu:[{q:'Translate: Ngiyakuthanda',a:'I love you'},{q:'Translate: Sawubona',a:'Hello (one person)'},{q:'Translate: Ngiyabonga',a:'Thank you'},{q:'Translate: Ngiyaphila',a:'I am well'}],sesotho:[{q:'Translate: Lumela',a:'Hello'},{q:'Translate: Ke a leboha',a:'Thank you'},{q:'Translate: O kae?',a:'How are you?'}],tshivenda:[{q:'Translate: Ndaa',a:'Hello'},{q:'Translate: Ndo livhuwa',a:'Thank you'},{q:'Translate: Vho vuwa hani?',a:'How are you?'}],xitsonga:[{q:'Translate: Avuxeni',a:'Hello / Good morning'},{q:'Translate: Inkomu',a:'Thank you'},{q:'Translate: Ku njhani?',a:'How are you?'}],history:[{q:'When were SA\'s first democratic elections?',a:'1994'},{q:'First democratic president of SA?',a:'Nelson Mandela'},{q:'What was apartheid?',a:'Institutionalized racial segregation (1948–1994)'},{q:'What is June 16 in SA?',a:'Youth Day — Soweto Uprising'},{q:'When was the ANC founded?',a:'1912'}]};
+
+const QUIZZES=[{sid:'business',s:'Business Studies',q:'What are the 4 P\'s of Marketing?',o:['Product, Price, Place, Promotion','People, Process, Physical, Profit','Plan, Prepare, Produce, Profit','Patience, Persistence, Profit, Product'],c:0},{sid:'business',s:'Business Studies',q:'A sole proprietor has:',o:['Limited liability','Unlimited liability','No liability','Shared liability'],c:1},{sid:'business',s:'Business Studies',q:'Max partners in a partnership?',o:['5','10','20','50'],c:2},{sid:'economics',s:'Economics',q:'When demand rises and supply constant, price:',o:['Falls','Stays same','Rises','Zero'],c:2},{sid:'economics',s:'Economics',q:'GDP stands for:',o:['General Domestic Product','Gross Domestic Product','Government Domestic Price','Grand Domestic Production'],c:1},{sid:'economics',s:'Economics',q:'What is opportunity cost?',o:['Total cost of production','Value of next best alternative','Cost of raw materials','Government taxes'],c:1},{sid:'english',s:'English',q:'A metaphor is:',o:['Comparison using like/as','Direct comparison without like/as','An exaggeration','A type of rhyme'],c:1},{sid:'english',s:'English',q:'Which is a simile?',o:['Time is money','He is as strong as an ox','The wind whispered','All the world\'s a stage'],c:1},{sid:'math',s:'Mathematical Literacy',q:'15% of 200 is:',o:['15','25','30','35'],c:2},{sid:'math',s:'Mathematical Literacy',q:'R450 shared 2:3, smaller share is:',o:['R150','R180','R225','R270'],c:1},{sid:'math',s:'Mathematical Literacy',q:'Mean of 4, 8, 6, 10, 12?',o:['6','7','8','9'],c:2},{sid:'lo',s:'Life Orientation',q:'Three types of well-being:',o:['Physical, Mental, Social','Physical, Emotional, Financial','Mental, Social, Spiritual','Physical, Mental, Economic'],c:0},{sid:'history',s:'History',q:'SA first democratic elections?',o:['1990','1992','1994','1996'],c:2},{sid:'history',s:'History',q:'First democratic president?',o:['Thabo Mbeki','F.W. de Klerk','Nelson Mandela','Desmond Tutu'],c:2},{sid:'history',s:'History',q:'June 16 in SA commemorates:',o:['Freedom Day','Youth Day','Heritage Day','Human Rights Day'],c:1},{sid:'isizulu',s:'isiZulu',q:'"Sawubona" means:',o:['Goodbye','Thank you','Hello','Please'],c:2},{sid:'sesotho',s:'Sesotho',q:'"Lumela" means:',o:['Goodbye','Hello','Thank you','Sorry'],c:1},{sid:'tshivenda',s:'Tshivenda',q:'"Ndaa" means:',o:['Goodbye','Sorry','Hello','Thank you'],c:2},{sid:'xitsonga',s:'Xitsonga',q:'"Avuxeni" means:',o:['Goodbye','Good morning','Thank you','Please'],c:1}];
+
+const TIPS=["Use the Pomodoro Technique: 25 min focus, 5 min break.","Teach what you learn — explaining solidifies knowledge.","Create mind maps for complex topics.","Study hardest subject when energy is highest.","Review notes within 24 hours for 80% better retention.","Practice past papers under timed conditions.","Use active recall instead of re-reading.","Sleep 7-8 hours — brain consolidates memory during sleep.","Start studying weeks before exams, not days.","Use acronyms and mnemonics for lists."];
+const MOTIVATE=["You are capable of more than you know.","Every hour you study is an investment in your future.","The harder you work, the luckier you get.","Your Class 11D family believes in you.","Small daily improvements lead to stunning results.","Discipline is choosing what you want most over what you want now."];
+const AI_HELP={business:{p:['business','marketing','sole proprietor','partnership'],r:["Key: types of businesses, 4 P's, business plans.","Sole proprietor = unlimited liability.","4 P's: Product, Price, Place, Promotion."]},economics:{p:['economics','supply','demand','gdp'],r:["Key: supply & demand, GDP, inflation.","Demand up + supply same = prices rise.","GDP = total value of goods/services produced."]},english:{p:['english','essay','metaphor','simile'],r:["Essay: Intro+Body+Conclusion.","Metaphor = direct comparison. Simile = like/as."]},math:{p:['math','percentage','ratio'],r:["Percentage change = ((New−Old)/Old)×100.","Always show working — method marks matter!"]},lo:{p:['life orientation','well-being','rights'],r:["Three well-being types: Physical, Mental, Social.","SMART goals: Specific, Measurable, Achievable, Realistic, Time-bound."]},isizulu:{p:['isizulu','zulu'],r:["Sawubona = Hello. Ngiyabonga = Thank you."]},sesotho:{p:['sesotho','sotho'],r:["Lumela = Hello. Ke a leboha = Thank you."]},tshivenda:{p:['tshivenda','venda'],r:["Ndaa = Hello. Ndo livhuwa = Thank you."]},xitsonga:{p:['xitsonga','tsonga'],r:["Avuxeni = Hello. Inkomu = Thank you."]},history:{p:['history','apartheid','mandela'],r:["1994 = first democratic elections. Mandela = first president."]}};
+function getAI(input){const l=input.toLowerCase().trim();if(/^(hi|hello|hey|howzit|sup)\b/.test(l))return pick(["Hey! Ask about subjects, quizzes, or just chat!","Ready to study? Type a subject or ask for a quiz."]);if(/quiz|test me/i.test(l))return{type:'quiz',data:pick(QUIZZES)};if(/study tip/i.test(l))return pick(TIPS);if(/motivat|tired|stressed/i.test(l))return pick(MOTIVATE);if(/thank/i.test(l))return pick(["You're welcome!","Anytime!"]);for(const[k,v]of Object.entries(AI_HELP)){if(v.p.some(p=>l.includes(p)))return pick(v.r)}if(/help/i.test(l))return"I can help with:\n- Study tips\n- Quiz questions\n- Subject guidance\n- Motivation";return pick(["Try asking about a subject, or type 'help'.","Ask about Business, Economics, English, Math, History, or languages!"])}
+
+const WEEKLY=[{d:'Mon',h:3.5},{d:'Tue',h:4.2},{d:'Wed',h:2.8},{d:'Thu',h:5.0},{d:'Fri',h:3.0},{d:'Sat',h:6.5},{d:'Sun',h:4.0}];
+const NAV_ITEMS=[{id:'hero',icon:'graduation-cap',label:'Home'},{id:'timetable',icon:'calendar',label:'Timetable'},{id:'homework',icon:'clipboard',label:'Homework'},{id:'marks',icon:'file-text',label:'Marks'},{id:'analytics',icon:'bar-chart',label:'Analytics'},{id:'subjects',icon:'book-open',label:'Subjects'},{id:'quiz',icon:'brain',label:'Quizzes'},{id:'timer',icon:'timer',label:'Focus Timer'},{id:'sounds',icon:'music',label:'Sounds'},{id:'chatroom',icon:'message-circle',label:'Chatroom'},{id:'wall',icon:'message-square',label:'Class Wall'},{id:'badges',icon:'award',label:'Achievements'}];
+
+/* ===== SVG ICON ===== */
+function Icon({name,size=20,className='',sw=2}){
+  const p={
+    'book-open':<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>,
+    'calendar':<><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></>,
+    'trophy':<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></>,
+    'play':<><polygon points="5 3 19 12 5 21 5 3"/></>,
+    'pause':<><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></>,
+    'volume':<><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></>,
+    'music':<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>,
+    'chevron-right':<><path d="m9 18 6-6-6-6"/></>,
+    'chevron-down':<><path d="m6 9 6 6 6-6"/></>,
+    'chevron-up':<><path d="m18 15-6-6-6 6"/></>,
+    'sparkles':<><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></>,
+    'timer':<><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></>,
+    'message-square':<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>,
+    'message-circle':<><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></>,
+    'send':<><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
+    'download':<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>,
+    'brain':<><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></>,
+    'target':<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>,
+    'zap':<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>,
+    'award':<><circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/></>,
+    'graduation-cap':<><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>,
+    'users':<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    'heart':<><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></>,
+    'plus':<><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></>,
+    'x':<><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
+    'check':<><polyline points="20 6 9 17 4 12"/></>,
+    'briefcase':<><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
+    'trending-up':<><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
+    'languages':<><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></>,
+    'landmark':<><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></>,
+    'calculator':<><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></>,
+    'bar-chart':<><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></>,
+    'sunrise':<><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/></>,
+    'moon':<><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></>,
+    'flame':<><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></>,
+    'globe':<><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>,
+    'coffee':<><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></>,
+    'refresh':<><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></>,
+    'menu':<><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></>,
+    'bot':<><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></>,
+    'arrow-up':<><path d="m18 15-6-6-6 6"/></>,
+    'hourglass':<><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4a2 2 0 0 0-.59-1.41L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22"/><path d="M7 2v4a2 2 0 0 0 .59 1.41L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2"/></>,
+    'skip-forward':<><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></>,
+    'repeat':<><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></>,
+    'mail':<><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>,
+    'lock':<><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>,
+    'user':<><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+    'log-out':<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></>,
+    'eye':<><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>,
+    'eye-off':<><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></>,
+    'trash':<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>,
+    'shield':<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>,
+    'at-sign':<><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></>,
+    'clipboard':<><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></>,
+    'file-text':<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></>,
+    'star':<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>,
+    'key':<><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></>,
+    'shield-check':<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></>
+  };
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" className={className}>{p[name]||null}</svg>;
+}
+
+function useInView(th=.1){const r=useRef(null),[v,setV]=useState(false);useEffect(()=>{const e=r.current;if(!e)return;const o=new IntersectionObserver(([x])=>{if(x.isIntersecting){setV(true);o.disconnect()}},{threshold:th});o.observe(e);return()=>o.disconnect()},[]);return[r,v]}
+
+/* ═══════════════════════════════════════════
+   LOGIN / SIGNUP SCREEN
+   ═══════════════════════════════════════════ */
+function LoginScreen(){
+  const[tab,setTab]=useState('login');const[email,setEmail]=useState('');const[pass,setPass]=useState('');const[name,setName]=useState('');const[showPass,setShowPass]=useState(false);const[error,setError]=useState('');const[loading,setLoading]=useState(false);const[resetSent,setResetSent]=useState(false);
+  const doLogin=async e=>{e.preventDefault();setError('');setLoading(true);try{await auth.signInWithEmailAndPassword(email,pass)}catch(err){setError(err.code==='auth/user-not-found'?'No account found with this email.':err.code==='auth/invalid-credential'?'Invalid email or password.':err.message)}finally{setLoading(false)}};
+  const doSignup=async e=>{e.preventDefault();setError('');setLoading(true);if(name.trim().length<2){setError('Please enter your name (at least 2 characters).');setLoading(false);return}try{const cred=await auth.createUserWithEmailAndPassword(email,pass);await cred.user.updateProfile({displayName:name.trim()})}catch(err){setError(err.code==='auth/email-already-in-use'?'This email is already registered.':err.code==='auth/weak-password'?'Password must be at least 6 characters.':err.message)}finally{setLoading(false)}};
+  const doGoogle=async()=>{setError('');setLoading(true);try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(err){if(err.code!=='auth/popup-closed-by-user')setError(err.message)}finally{setLoading(false)}};
+  const doReset=async()=>{if(!email){setError('Enter your email above first, then tap Forgot Password.');return}setError('');setResetSent(false);try{await auth.sendPasswordResetEmail(email);setResetSent(true)}catch(err){setError(err.code==='auth/user-not-found'?'No account with this email.':err.message)}};
+  return(
+    <div className="fixed inset-0 flex items-center justify-center" style={{background:'#060b14',zIndex:999,padding:16}}>
+      <div className="absolute rounded-full" style={{top:'10%',left:'5%',width:300,height:300,background:'radial-gradient(circle,rgba(16,185,129,.12) 0%,transparent 70%)',filter:'blur(60px)',animation:'orbFloat 12s ease-in-out infinite'}}/>
+      <div className="absolute rounded-full" style={{bottom:'10%',right:'5%',width:250,height:250,background:'radial-gradient(circle,rgba(52,211,153,.08) 0%,transparent 70%)',filter:'blur(50px)',animation:'orbFloat2 15s ease-in-out infinite'}}/>
+      <div className="glass w-full" style={{maxWidth:400,borderRadius:24,animation:'scaleIn .5s ease',position:'relative',overflow:'hidden'}}>
+        <div style={{height:3,background:'linear-gradient(90deg,#10b981,#6ee7b7,#10b981)'}}/>
+        <div className="p-6 sm:p-8">
+          <div className="text-center mb-6">
+            <div className="mx-auto flex items-center justify-center rounded-2xl mb-3" style={{width:56,height:56,background:'linear-gradient(135deg,#10b981,#059669)',boxShadow:'0 0 30px rgba(16,185,129,.25)'}}><Icon name="graduation-cap" size={28} className="text-white"/></div>
+            <h1 className="font-heading font-bold text-xl" style={{color:'#ecfdf5'}}>Class 11D Hub</h1>
+            <p className="text-xs mt-1" style={{color:'#64748b'}}>Sign in to connect with your class</p>
+          </div>
+          <div className="flex p-1 rounded-xl mb-6" style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.06)'}}>
+            {['login','signup'].map(t=>(<button key={t} onClick={()=>{setTab(t);setError('');setResetSent(false)}} className="flex-1 py-2.5 rounded-lg text-xs font-heading font-semibold transition-all" style={{background:tab===t?'linear-gradient(135deg,#10b981,#059669)':'transparent',color:tab===t?'#fff':'#64748b',boxShadow:tab===t?'0 2px 8px rgba(16,185,129,.25)':'none'}}>{t==='login'?'Sign In':'Sign Up'}</button>))}
+          </div>
+          {error&&<div className="mb-4 p-3 rounded-xl text-xs" style={{background:'rgba(239,68,68,.1)',border:'1px solid rgba(239,68,68,.2)',color:'#fca5a5'}}>{error}</div>}
+          {resetSent&&<div className="mb-4 p-3 rounded-xl text-xs" style={{background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)',color:'#6ee7b7'}}>Password reset email sent!</div>}
+          <form onSubmit={tab==='login'?doLogin:doSignup} className="space-y-3">
+            {tab==='signup'&&<div className="relative"><div className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{color:'#475569'}}><Icon name="user" size={18}/></div><input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Your display name" className="login-input" required/></div>}
+            <div className="relative"><div className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{color:'#475569'}}><Icon name="mail" size={18}/></div><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" className="login-input" required/></div>
+            <div className="relative"><div className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{color:'#475569'}}><Icon name="lock" size={18}/></div><input type={showPass?'text':'password'} value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" className="login-input" style={{paddingRight:44}} required/><button type="button" onClick={()=>setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{background:'transparent',border:'none',color:'#64748b',cursor:'pointer'}}><Icon name={showPass?'eye-off':'eye'} size={18}/></button></div>
+            {tab==='login'&&<div className="text-right"><button type="button" onClick={doReset} className="text-xs font-medium" style={{background:'transparent',border:'none',color:'#6ee7b7',cursor:'pointer'}}>Forgot password?</button></div>}
+            <button type="submit" disabled={loading} className="w-full py-3 rounded-xl font-heading font-semibold text-sm transition-all active:scale-95 flex items-center justify-center gap-2" style={{background:loading?'rgba(16,185,129,.3)':'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none',boxShadow:'0 4px 14px rgba(16,185,129,.25)'}}>
+              {loading&&<div style={{width:16,height:16,border:'2px solid rgba(255,255,255,.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin .6s linear infinite'}}/>}
+              {tab==='login'?'Sign In':'Create Account'}
+            </button>
+          </form>
+          <div className="flex items-center gap-3 my-5"><div className="flex-1 h-px" style={{background:'rgba(255,255,255,.06)'}}/><span className="text-xs" style={{color:'#475569'}}>or continue with</span><div className="flex-1 h-px" style={{background:'rgba(255,255,255,.06)'}}/></div>
+          <button onClick={doGoogle} disabled={loading} className="w-full py-3 rounded-xl font-heading font-semibold text-sm flex items-center justify-center gap-2.5 active:scale-95 transition-transform" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',color:'#ecfdf5'}}>
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Google
+          </button>
+          <p className="text-center text-xs mt-5" style={{color:'#475569'}}>{tab==='login'?"Don't have an account? ":"Already have an account? "}<button onClick={()=>{setTab(tab==='login'?'signup':'login');setError('')}} style={{background:'transparent',border:'none',color:'#6ee7b7',cursor:'pointer',fontWeight:600,fontSize:12}}>{tab==='login'?'Sign Up':'Sign In'}</button></p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   SLIDE MENU
+   ═══════════════════════════════════════════ */
+function SlideMenu({open,onClose,onNav}){
+  const{user}=useAuth();
+  const{isTeacher,verify,exit}=useTeacher();
+  const[showTC,setShowTC]=useState(false);
+  const[tCode,setTCode]=useState('');
+  const[tErr,setTErr]=useState('');
+  const doLogout=()=>{onClose();setTimeout(()=>auth.signOut(),300)};
+  const doVerify=()=>{if(verify(tCode)){setShowTC(false);setTCode('');setTErr('')}else setTErr('Wrong passcode')};
+  if(!open)return null;
+  return(
+    <div className="fixed inset-0" style={{zIndex:100}}>
+      <div onClick={onClose} className="absolute inset-0" style={{background:'rgba(0,0,0,.6)',backdropFilter:'blur(4px)',animation:'fadeIn .3s ease'}}/>
+      <div className="absolute top-0 left-0 bottom-0 glass" style={{width:'min(82%,320px)',animation:'slideInLeft .3s cubic-bezier(.4,0,.2,1)',borderRadius:'0 20px 20px 0',display:'flex',flexDirection:'column'}}>
+        <div className="p-5" style={{borderBottom:'1px solid rgba(255,255,255,.06)'}}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center justify-center rounded-full" style={{width:44,height:44,background:'linear-gradient(135deg,#10b981,#059669)',fontSize:18,fontWeight:700,color:'#fff',fontFamily:'Outfit'}}>{(user.displayName||user.email||'?')[0].toUpperCase()}</div>
+            <div className="flex-1 min-w-0"><h3 className="font-heading font-semibold text-sm truncate" style={{color:'#ecfdf5'}}>{user.displayName||'Scholar'}</h3><p className="text-xs truncate" style={{color:'#64748b'}}>{user.email}</p></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{background:'rgba(16,185,129,.08)',border:'1px solid rgba(16,185,129,.15)',width:'fit-content'}}><Icon name="shield" size={12} className="text-emerald-400"/><span className="text-xs" style={{color:'#6ee7b7'}}>Signed in</span></div>
+            {isTeacher&&<div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.2)',width:'fit-content'}}><Icon name="key" size={12} style={{color:'#fbbf24'}}/><span className="text-xs" style={{color:'#fbbf24'}}>Teacher</span></div>}
+          </div>
+        </div>
+        <nav className="flex-1 p-4 space-y-1" style={{overflowY:'auto'}}>
+          {NAV_ITEMS.map(item=>(
+            <button key={item.id} onClick={()=>onNav(item.id)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" style={{background:'transparent',border:'none',color:'#94a3b8'}} onMouseOver={e=>{e.currentTarget.style.background='rgba(16,185,129,.08)';e.currentTarget.style.color='#6ee7b7'}} onMouseOut={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='#94a3b8'}}>
+              <Icon name={item.icon} size={20}/><span className="font-medium text-sm">{item.label}</span><Icon name="chevron-right" size={16} className="ml-auto" style={{opacity:.3}}/>
+            </button>
+          ))}
+        </nav>
+        <div className="p-4 space-y-2" style={{borderTop:'1px solid rgba(255,255,255,.06)'}}>
+          {!isTeacher&&!showTC&&<button onClick={()=>setShowTC(true)} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm active:scale-95" style={{background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.15)',color:'#fbbf24'}}><Icon name="key" size={16}/> Teacher Mode</button>}
+          {showTC&&<div className="space-y-2"><input type="password" value={tCode} onChange={e=>{setTCode(e.target.value);setTErr('')}} onKeyDown={e=>{if(e.key==='Enter')doVerify()}} placeholder="Enter teacher passcode" className="admin-input" style={{textAlign:'center'}}/>{tErr&&<p className="text-xs text-center" style={{color:'#fca5a5'}}>{tErr}</p>}<div className="flex gap-2"><button onClick={()=>{setShowTC(false);setTCode('');setTErr('')}} className="flex-1 py-2 rounded-xl text-xs font-medium" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8'}}>Cancel</button><button onClick={doVerify} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{background:'linear-gradient(135deg,#fbbf24,#f59e0b)',border:'none',color:'#000'}}>Verify</button></div></div>}
+          {isTeacher&&<button onClick={exit} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm active:scale-95" style={{background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.15)',color:'#fbbf24'}}><Icon name="shield-check" size={16}/> Exit Teacher Mode</button>}
+          <button onClick={doLogout} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm active:scale-95" style={{background:'rgba(239,68,68,.08)',border:'1px solid rgba(239,68,68,.15)',color:'#fca5a5'}}><Icon name="log-out" size={16}/> Sign Out</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════ */
+function Header({onMenu}){
+  const{user}=useAuth();
+  const{isTeacher}=useTeacher();
+  return(
+    <nav className="glass fixed top-0 left-0 right-0" style={{zIndex:50,margin:'12px',padding:'10px 16px',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+      <button onClick={onMenu} className="flex items-center justify-center rounded-xl" style={{width:40,height:40,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)'}}><Icon name="menu" size={20} className="text-emerald-400"/></button>
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-center rounded-xl font-heading" style={{width:36,height:36,background:'linear-gradient(135deg,#10b981,#059669)',fontSize:15,fontWeight:800,color:'#fff',letterSpacing:'-0.5px'}}>G11</div>
+        <span className="font-heading font-bold text-sm" style={{background:'linear-gradient(135deg,#ecfdf5,#6ee7b7)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>11D Hub</span>
+        {isTeacher&&<span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'rgba(251,191,36,.15)',color:'#fbbf24',fontSize:9}}>TEACHER</span>}
+      </div>
+      <div className="flex items-center justify-center rounded-full" style={{width:34,height:34,background:'linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.1))',border:'1px solid rgba(16,185,129,.25)',fontSize:13,fontWeight:700,color:'#6ee7b7',fontFamily:'Outfit'}}>{(user.displayName||user.email||'?')[0].toUpperCase()}</div>
+    </nav>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════ */
+function Hero(){
+  const[now,setNow]=useState(Date.now());
+  useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(t)},[]);
+  const exams=[{name:'Mid-Year Trials',date:new Date(new Date().setDate(new Date().getDate()+34))},{name:'Final Exams',date:new Date(new Date().setMonth(new Date().getMonth()+3))}];
+  const tl=d=>{const df=d-now;if(df<=0)return{d:0,h:0,m:0,s:0};return{d:Math.floor(df/864e5),h:Math.floor(df%864e5/36e5),m:Math.floor(df%36e5/6e4),s:Math.floor(df%6e4/1e3)}};
+  const[r,v]=useInView();
+  return(
+    <section id="hero" ref={r} className="pt-20 pb-4 px-4">
+      <div className={`text-center mb-8 ${v?'anim-fade-up':''}`}>
+        <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{color:'#6ee7b7'}}>Welcome to</p>
+        <h1 className="font-heading text-3xl sm:text-5xl font-extrabold mb-3" style={{background:'linear-gradient(135deg,#ecfdf5 0%,#6ee7b7 50%,#10b981 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',lineHeight:1.15}}>Class 11D Hub</h1>
+        <p className="text-sm max-w-sm mx-auto" style={{color:'#94a3b8'}}>Your all-in-one study companion.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+        {exams.map((ex,i)=>{const t=tl(ex.date);return(
+          <div key={i} className={`glass p-4 text-center ${v?'anim-fade-up':''}`} style={{borderRadius:18,animationDelay:`${.15+i*.1}s`}}>
+            <div className="flex items-center justify-center gap-1.5 mb-2"><Icon name="calendar" size={13} className="text-emerald-400"/><span className="text-xs font-semibold uppercase" style={{color:'#94a3b8',fontSize:9}}>{ex.name}</span></div>
+            <div className="flex justify-center gap-2">{[{v:t.d,l:'D'},{v:t.h,l:'H'},{v:t.m,l:'M'},{v:t.s,l:'S'}].map((s,j)=><div key={j} className="text-center"><div className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>{String(s.v).padStart(2,'0')}</div><div style={{color:'#64748b',fontSize:8}}>{s.l}</div></div>)}</div>
+          </div>
+        )})}
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   TIMETABLE
+   ═══════════════════════════════════════════ */
+function Timetable(){
+  const[activeDay,setActiveDay]=useState(getActiveDay);const[now,setNow]=useState(new Date());
+  useEffect(()=>{const t=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(t)},[]);
+  const[r,v]=useInView();const periods=TIMETABLE[activeDay]||[];const livePeriod=getCurrentPeriod(periods);const isSchool=now.getHours()>=8&&now.getHours()<15;
+  const isToday=k=>{const m={monday:1,tuesday:2,wednesday:3,thursday:4,friday1:5,friday2:5};const d=now.getDay();if(m[k]!==d)return false;if(d===5){const dt=now.getDate(),fd=new Date(now.getFullYear(),now.getMonth(),1).getDay(),w=Math.ceil((dt+(fd<=5?fd:7-fd))/7);return w%2===1?k==='friday1':k==='friday2'}return true};
+  return(
+    <section id="timetable" ref={r} className={`py-6 px-4 max-w-2xl mx-auto ${v?'anim-fade-up':''}`}>
+      <div className="flex items-center gap-2.5 mb-5"><div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="calendar" size={16} className="text-emerald-400"/></div><div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Timetable</h2><p className="text-xs" style={{color:'#64748b'}}>Weekly Schedule</p></div>{livePeriod&&isSchool&&isToday(activeDay)&&<div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full live-bar" style={{background:'rgba(16,185,129,.12)',border:'1px solid rgba(16,185,129,.25)'}}><div className="w-1.5 h-1.5 rounded-full" style={{background:'#10b981'}}/><span className="text-xs font-semibold" style={{color:'#6ee7b7'}}>Now: {SUBJECT_COLORS[periods[livePeriod.i].sub]?.full}</span></div>}</div>
+      <div className="glass p-1.5 mb-4 day-tabs flex gap-1 overflow-x-auto" style={{borderRadius:14}}>
+        {DAY_TABS.map(t=><button key={t.key} onClick={()=>setActiveDay(t.key)} className="flex-shrink-0 flex-1 py-2.5 px-2 rounded-xl text-center" style={{background:activeDay===t.key?'rgba(16,185,129,.15)':'transparent',border:activeDay===t.key?'1px solid rgba(16,185,129,.3)':'1px solid transparent',color:activeDay===t.key?'#6ee7b7':'#64748b'}}><span className="font-heading font-semibold text-xs">{t.label}</span>{isToday(t.key)&&<div className="mx-auto mt-1 rounded-full" style={{width:5,height:5,background:'#10b981'}}/>}</button>)}
+      </div>
+      <div className="space-y-2">
+        {periods.map((p,i)=>{const info=SUBJECT_COLORS[p.sub];const live=livePeriod&&livePeriod.i===i&&isToday(activeDay)&&isSchool;
+          const gap=()=>{if(i===0)return null;const[peH,peM]=periods[i-1].time.split('–')[1].trim().split(':').map(Number),[csH,csM]=p.time.split('–')[0].trim().split(':').map(Number);const g=(csH*60+csM)-(peH*60+peM);if(g>=45)return<div key={'g'+i} className="flex items-center gap-2 py-1.5"><div className="flex-1 h-px" style={{background:'rgba(255,255,255,.06)'}}/><span className="text-xs flex items-center gap-1" style={{color:'#475569',fontSize:10}}><Icon name="coffee" size={11}/> {g>=60?'Lunch':'Break'}</span><div className="flex-1 h-px" style={{background:'rgba(255,255,255,.06)'}}/></div>;return null};
+          return<React.Fragment key={i}>{gap()}<div className="glass overflow-hidden" style={{borderRadius:14,borderLeft:`3px solid ${live?info.border:info.border+'40'}`,background:live?info.bg:'var(--glass-bg)',animation:'fadeUp .4s ease forwards',opacity:0,animationDelay:`${i*.06}s`}}>
+            <div className="flex items-center gap-3 p-3.5"><div className="flex-shrink-0 text-center" style={{minWidth:72}}><span className="text-xs font-heading font-semibold block" style={{color:live?info.text:'#94a3b8'}}>{p.time.split('–')[0].trim()}</span><span className="text-xs block" style={{color:'#475569',fontSize:9}}>{p.time.split('–')[1].trim()}</span></div><div className="flex-shrink-0 h-8" style={{width:1,background:live?`${info.border}40`:'rgba(255,255,255,.06)'}}/><div className="flex-1 min-w-0"><div className="flex items-center gap-2"><h4 className="font-heading font-semibold text-sm truncate" style={{color:live?'#ecfdf5':p.sub==='FREE'||p.sub==='END'?'#475569':'#d1fae5'}}>{info.full}</h4>{live&&<span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:`${info.border}20`,color:info.text,fontSize:9}}>NOW</span>}</div><span className="text-xs" style={{color:'#475569',fontSize:11}}>{p.sub==='FREE'||p.sub==='END'?'':'Room 11D'}</span></div><div className="flex-shrink-0 flex items-center justify-center rounded-xl" style={{width:40,height:40,background:`${info.border}08`,border:`1px solid ${info.border}10`}}><span className="font-heading font-bold text-xs" style={{color:info.text+'80'}}>{p.sub}</span></div></div>
+            {live&&livePeriod&&<div className="px-3.5 pb-2"><div className="flex items-center justify-between mb-1"><span className="text-xs" style={{color:'#475569',fontSize:9}}>Progress</span><span className="text-xs font-semibold" style={{color:info.text,fontSize:9}}>{livePeriod.remaining}m left</span></div><div className="w-full rounded-full overflow-hidden" style={{height:3,background:'rgba(255,255,255,.06)'}}><div className="h-full rounded-full" style={{width:`${((60-livePeriod.remaining)/60)*100}%`,background:`linear-gradient(90deg,${info.border},${info.text})`,transition:'width 1s linear'}}/></div></div>}
+          </div></React.Fragment>
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   HOMEWORK SECTION (NEW)
+   ═══════════════════════════════════════════ */
+function HomeworkSection(){
+  const{isTeacher}=useTeacher();
+  const{user}=useAuth();
+  const[items,setItems]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[showForm,setShowForm]=useState(false);
+  const[fTitle,setFTitle]=useState('');
+  const[fSub,setFSub]=useState('business');
+  const[fDesc,setFDesc]=useState('');
+  const[fDue,setFDue]=useState('');
+  const[fBy,setFBy]=useState('');
+  const[r,v]=useInView();
+
+  useEffect(()=>{
+    const unsub=db.collection('homework').orderBy('dueDate','asc').onSnapshot(snap=>{
+      setItems(snap.docs.map(d=>({id:d.id,...d.data()})));
+      setLoading(false);
+    },()=>setLoading(false));
+    return unsub;
+  },[]);
+
+  const add=async()=>{
+    if(!fTitle.trim()||!fDue)return;
+    try{
+      await db.collection('homework').add({
+        title:fTitle.trim(),subject:fSub,description:fDesc.trim(),
+        dueDate:fDue,postedBy:fBy.trim()||user.displayName||'Teacher',
+        postedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      setFTitle('');setFDesc('');setFDue('');setFBy('');setShowForm(false);
+    }catch(e){console.error(e)}
+  };
+
+  const remove=async id=>{try{await db.collection('homework').doc(id).delete()}catch(e){console.error(e)}};
+
+  const subInfo=sid=>{const code=SUBJECT_MAP[sid];return code?SUBJECT_COLORS[code]:{border:'#10b981',text:'#6ee7b7',full:sid}};
+
+  return(
+    <section id="homework" ref={r} className={`py-6 px-4 max-w-2xl mx-auto ${v?'anim-fade-up':''}`}>
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="clipboard" size={16} className="text-emerald-400"/></div>
+        <div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Homework</h2><p className="text-xs" style={{color:'#64748b'}}>{items.length} assignment{items.length!==1?'s':''}</p></div>
+        {isTeacher&&<button onClick={()=>setShowForm(!showForm)} className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold active:scale-95" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none'}}><Icon name="plus" size={14}/> Add</button>}
+      </div>
+
+      {showForm&&<div className="glass p-4 mb-4 space-y-3" style={{borderRadius:16,borderLeft:'3px solid #fbbf24',animation:'fadeUp .3s ease'}}>
+        <div className="flex items-center gap-2 mb-1"><Icon name="key" size={14} style={{color:'#fbbf24'}}/><span className="text-xs font-semibold" style={{color:'#fbbf24'}}>Teacher: Add Homework</span></div>
+        <div className="grid grid-cols-2 gap-2">
+          <input value={fTitle} onChange={e=>setFTitle(e.target.value)} placeholder="Title *" className="admin-input"/>
+          <select value={fSub} onChange={e=>setFSub(e.target.value)} className="admin-input" style={{background:'rgba(255,255,255,.04)'}}>
+            {Object.entries(SUBJECT_NAMES).map(([k,v])=><option key={k} value={k} style={{background:'#0f172a'}}>{v}</option>)}
+          </select>
+        </div>
+        <textarea value={fDesc} onChange={e=>setFDesc(e.target.value)} placeholder="Description / instructions..." className="admin-input"/>
+        <div className="grid grid-cols-2 gap-2">
+          <div><label className="text-xs mb-1 block" style={{color:'#64748b'}}>Due Date *</label><input type="date" value={fDue} onChange={e=>setFDue(e.target.value)} className="admin-input"/></div>
+          <input value={fBy} onChange={e=>setFBy(e.target.value)} placeholder="Posted by (optional)" className="admin-input"/>
+        </div>
+        <div className="flex gap-2"><button onClick={()=>setShowForm(false)} className="flex-1 py-2.5 rounded-xl text-xs font-medium" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8'}}>Cancel</button><button onClick={add} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none'}}>Post Homework</button></div>
+      </div>}
+
+      {loading?<div className="text-center py-6"><div style={{width:24,height:24,border:'3px solid rgba(16,185,129,.2)',borderTopColor:'#10b981',borderRadius:'50%',animation:'spin .8s linear infinite',margin:'0 auto'}}/></div>:
+      items.length===0?<div className="glass p-6 text-center" style={{borderRadius:16}}><Icon name="clipboard" size={28} className="text-emerald-400 mx-auto mb-2" style={{opacity:.3}}/><p className="text-sm" style={{color:'#64748b'}}>No homework posted yet.</p></div>:
+      <div className="space-y-2.5">
+        {items.map((hw,i)=>{
+          const info=subInfo(hw.subject);const due=daysUntil(hw.dueDate);const overdue=due<0;const today=due===0;
+          return<div key={hw.id} className="glass overflow-hidden" style={{borderRadius:16,borderLeft:`3px solid ${overdue?'#ef4444':today?'#fbbf24':info.border}`,animation:'fadeUp .4s ease forwards',opacity:0,animationDelay:`${i*.06}s`}}>
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-1.5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:`${info.border}15`,color:info.text,fontSize:10}}>{SUBJECT_NAMES[hw.subject]||hw.subject}</span>
+                    {overdue&&<span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'rgba(239,68,68,.12)',color:'#fca5a5',fontSize:9}}>OVERDUE</span>}
+                    {today&&<span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'rgba(251,191,36,.12)',color:'#fbbf24',fontSize:9}}>DUE TODAY</span>}
+                  </div>
+                  <h4 className="font-heading font-semibold text-sm" style={{color:'#ecfdf5'}}>{hw.title}</h4>
+                </div>
+                {isTeacher&&<button onClick={()=>remove(hw.id)} className="flex-shrink-0 p-1.5 rounded-lg" style={{background:'rgba(239,68,68,.08)',border:'1px solid rgba(239,68,68,.15)'}}><Icon name="trash" size={14} style={{color:'#fca5a5'}}/></button>}
+              </div>
+              {hw.description&&<p className="text-xs mb-2" style={{color:'#94a3b8',lineHeight:1.5}}>{hw.description}</p>}
+              <div className="flex items-center gap-3 text-xs" style={{color:'#64748b'}}>
+                <span className="flex items-center gap-1"><Icon name="calendar" size={11}/> Due: {fmtDate(hw.dueDate)}</span>
+                <span className="flex items-center gap-1"><Icon name="user" size={11}/> {hw.postedBy}</span>
+                {!overdue&&!today&&due<=3&&<span style={{color:'#fbbf24'}}>{due} day{due!==1?'s':''} left</span>}
+              </div>
+            </div>
+          </div>
+        })}
+      </div>}
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   MARKS SECTION (NEW)
+   ═══════════════════════════════════════════ */
+function MarksSection(){
+  const{isTeacher}=useTeacher();
+  const{user}=useAuth();
+  const[marks,setMarks]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[filter,setFilter]=useState('all');
+  const[showForm,setShowForm]=useState(false);
+  const[fName,setFName]=useState('');
+  const[fSub,setFSub]=useState('business');
+  const[fAssess,setFAssess]=useState('');
+  const[fScore,setFScore]=useState('');
+  const[fTotal,setFTotal]=useState('50');
+  const[r,v]=useInView();
+
+  useEffect(()=>{
+    const unsub=db.collection('marks').orderBy('postedAt','desc').onSnapshot(snap=>{
+      setMarks(snap.docs.map(d=>({id:d.id,...d.data()})));
+      setLoading(false);
+    },()=>setLoading(false));
+    return unsub;
+  },[]);
+
+  const add=async()=>{
+    if(!fName.trim()||!fAssess.trim()||!fScore||!fTotal)return;
+    try{
+      await db.collection('marks').add({
+        studentName:fName.trim(),subject:fSub,assessment:fAssess.trim(),
+        score:Number(fScore),total:Number(fTotal),
+        postedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      setFName('');setFAssess('');setFScore('');setFTotal('50');setShowForm(false);
+    }catch(e){console.error(e)}
+  };
+
+  const remove=async id=>{try{await db.collection('marks').doc(id).delete()}catch(e){console.error(e)}};
+
+  const subjects=[...new Set(marks.map(m=>m.subject))];
+  const filtered=filter==='all'?marks:marks.filter(m=>m.subject===filter);
+  const avg=filtered.length>0?Math.round(filtered.reduce((a,m)=>a+m.score/m.total*100,0)/filtered.length):0;
+
+  return(
+    <section id="marks" ref={r} className={`py-6 px-4 max-w-2xl mx-auto ${v?'anim-fade-up':''}`}>
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="file-text" size={16} className="text-emerald-400"/></div>
+        <div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Marks</h2><p className="text-xs" style={{color:'#64748b'}}>{marks.length} assessment{marks.length!==1?'s':''}</p></div>
+        {isTeacher&&<button onClick={()=>setShowForm(!showForm)} className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold active:scale-95" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none'}}><Icon name="plus" size={14}/> Add</button>}
+      </div>
+
+      {showForm&&<div className="glass p-4 mb-4 space-y-3" style={{borderRadius:16,borderLeft:'3px solid #fbbf24',animation:'fadeUp .3s ease'}}>
+        <div className="flex items-center gap-2 mb-1"><Icon name="key" size={14} style={{color:'#fbbf24'}}/><span className="text-xs font-semibold" style={{color:'#fbbf24'}}>Teacher: Add Marks</span></div>
+        <input value={fName} onChange={e=>setFName(e.target.value)} placeholder="Student name *" className="admin-input"/>
+        <div className="grid grid-cols-2 gap-2">
+          <select value={fSub} onChange={e=>setFSub(e.target.value)} className="admin-input" style={{background:'rgba(255,255,255,.04)'}}>
+            {Object.entries(SUBJECT_NAMES).map(([k,v])=><option key={k} value={k} style={{background:'#0f172a'}}>{v}</option>)}
+          </select>
+          <input value={fAssess} onChange={e=>setFAssess(e.target.value)} placeholder="Assessment name *" className="admin-input"/>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div><label className="text-xs mb-1 block" style={{color:'#64748b'}}>Score *</label><input type="number" value={fScore} onChange={e=>setFScore(e.target.value)} placeholder="e.g. 42" className="admin-input"/></div>
+          <div><label className="text-xs mb-1 block" style={{color:'#64748b'}}>Total *</label><input type="number" value={fTotal} onChange={e=>setFTotal(e.target.value)} placeholder="e.g. 50" className="admin-input"/></div>
+        </div>
+        <div className="flex gap-2"><button onClick={()=>setShowForm(false)} className="flex-1 py-2.5 rounded-xl text-xs font-medium" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8'}}>Cancel</button><button onClick={add} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none'}}>Save Marks</button></div>
+      </div>}
+
+      {marks.length>0&&<div className="glass p-4 mb-4" style={{borderRadius:16}}>
+        <div className="flex items-center justify-between mb-3"><span className="text-xs" style={{color:'#94a3b8'}}>Class Average</span><span className="font-heading font-bold text-xl" style={{color:avg>=70?'#10b981':avg>=50?'#fbbf24':'#ef4444'}}>{avg}%</span></div>
+        <div className="flex gap-2 overflow-x-auto day-tabs pb-1">
+          <button onClick={()=>setFilter('all')} className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{background:filter==='all'?'rgba(16,185,129,.15)':'rgba(255,255,255,.04)',border:`1px solid ${filter==='all'?'rgba(16,185,129,.3)':'rgba(255,255,255,.06)'}`,color:filter==='all'?'#6ee7b7':'#64748b'}}>All</button>
+          {subjects.map(s=><button key={s} onClick={()=>setFilter(s)} className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{background:filter===s?'rgba(16,185,129,.15)':'rgba(255,255,255,.04)',border:`1px solid ${filter===s?'rgba(16,185,129,.3)':'rgba(255,255,255,.06)'}`,color:filter===s?'#6ee7b7':'#64748b',whiteSpace:'nowrap'}}>{SUBJECT_NAMES[s]||s}</button>)}
+        </div>
+      </div>}
+
+      {loading?<div className="text-center py-6"><div style={{width:24,height:24,border:'3px solid rgba(16,185,129,.2)',borderTopColor:'#10b981',borderRadius:'50%',animation:'spin .8s linear infinite',margin:'0 auto'}}/></div>:
+      filtered.length===0?<div className="glass p-6 text-center" style={{borderRadius:16}}><Icon name="file-text" size={28} className="text-emerald-400 mx-auto mb-2" style={{opacity:.3}}/><p className="text-sm" style={{color:'#64748b'}}>No marks posted yet.</p></div>:
+      <div className="glass overflow-hidden" style={{borderRadius:16}}>
+        <div className="overflow-x-auto">
+          <table style={{width:'100%',borderCollapse:'collapse'}}>
+            <thead><tr style={{borderBottom:'1px solid rgba(255,255,255,.06)'}}>
+              <th className="text-left text-xs font-semibold px-4 py-3" style={{color:'#94a3b8'}}>Student</th>
+              <th className="text-left text-xs font-semibold px-4 py-3" style={{color:'#94a3b8'}}>Subject</th>
+              <th className="text-left text-xs font-semibold px-4 py-3" style={{color:'#94a3b8'}}>Assessment</th>
+              <th className="text-right text-xs font-semibold px-4 py-3" style={{color:'#94a3b8'}}>Score</th>
+              <th className="text-right text-xs font-semibold px-4 py-3" style={{color:'#94a3b8'}}>%</th>
+              {isTeacher&&<th className="px-4 py-3" style={{width:40}}></th>}
+            </tr></thead>
+            <tbody>
+              {filtered.map((m,i)=>{
+                const pct=Math.round(m.score/m.total*100);const col=pct>=80?'#10b981':pct>=60?'#fbbf24':'#ef4444';
+                const info=SUBJECT_COLORS[SUBJECT_MAP[m.subject]];
+                return<tr key={m.id} style={{borderBottom:'1px solid rgba(255,255,255,.03)',animation:'fadeUp .3s ease forwards',opacity:0,animationDelay:`${i*.04}s`}}>
+                  <td className="px-4 py-2.5"><span className="text-xs font-medium" style={{color:'#ecfdf5'}}>{m.studentName}</span></td>
+                  <td className="px-4 py-2.5"><span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:info?`${info.border}15`:'rgba(255,255,255,.05)',color:info?info.text:'#94a3b8',fontSize:10}}>{SUBJECT_NAMES[m.subject]||m.subject}</span></td>
+                  <td className="px-4 py-2.5"><span className="text-xs" style={{color:'#d1fae5'}}>{m.assessment}</span></td>
+                  <td className="px-4 py-2.5 text-right"><span className="text-xs font-semibold" style={{color:'#ecfdf5'}}>{m.score}/{m.total}</span></td>
+                  <td className="px-4 py-2.5 text-right"><span className="text-xs font-bold" style={{color:col}}>{pct}%</span></td>
+                  {isTeacher&&<td className="px-2 py-2.5 text-center"><button onClick={()=>remove(m.id)} style={{background:'transparent',border:'none',cursor:'pointer',padding:4}}><Icon name="trash" size={13} style={{color:'#475569'}}/></button></td>}
+                </tr>
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>}
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   QUIZ
+   ═══════════════════════════════════════════ */
+function QuizSection(){
+  const{stats,update}=useStats();const[mode,setMode]=useState('select');const[filter,setFilter]=useState('all');const[questions,setQuestions]=useState([]);const[cur,setCur]=useState(0);const[score,setScore]=useState(0);const[ans,setAns]=useState(null);const[showNext,setShowNext]=useState(false);const[r,v]=useInView();
+  const subjects=[...new Set(QUIZZES.map(q=>q.s))];
+  const start=()=>{let pool=filter==='all'?[...QUIZZES]:QUIZZES.filter(q=>q.s===filter);pool=pool.sort(()=>Math.random()-.5).slice(0,Math.min(10,pool.length));setQuestions(pool);setCur(0);setScore(0);setAns(null);setShowNext(false);setMode('quiz')};
+  const answer=i=>{if(ans!==null)return;setAns(i);if(i===questions[cur].c)setScore(s=>s+1);setTimeout(()=>setShowNext(true),400)};
+  const next=()=>{if(cur+1>=questions.length){setMode('results');update({quizTotal:stats.quizTotal+questions.length,quizCorrect:stats.quizCorrect+score})}else{setCur(c=>c+1);setAns(null);setShowNext(false)}};
+  if(mode==='select')return(<section id="quiz" ref={r} className={`py-6 px-4 max-w-2xl mx-auto ${v?'anim-fade-up':''}`}><div className="flex items-center gap-2.5 mb-5"><div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="brain" size={16} className="text-emerald-400"/></div><div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Quiz Mode</h2><p className="text-xs" style={{color:'#64748b'}}>Test your knowledge</p></div></div><div className="glass p-4 mb-4" style={{borderRadius:16}}><div className="grid grid-cols-3 gap-3 text-center"><div><div className="font-heading font-bold text-xl" style={{color:'#10b981'}}>{stats.quizCorrect}</div><div className="text-xs" style={{color:'#64748b'}}>Correct</div></div><div><div className="font-heading font-bold text-xl" style={{color:'#ecfdf5'}}>{stats.quizTotal}</div><div className="text-xs" style={{color:'#64748b'}}>Attempted</div></div><div><div className="font-heading font-bold text-xl" style={{color:'#6ee7b7'}}>{stats.quizTotal>0?Math.round(stats.quizCorrect/stats.quizTotal*100):0}%</div><div className="text-xs" style={{color:'#64748b'}}>Accuracy</div></div></div><div className="mt-3"><div className="flex justify-between mb-1"><span className="text-xs" style={{color:'#64748b'}}>Quiz Master Progress</span><span className="text-xs font-semibold" style={{color:'#6ee7b7'}}>{Math.min(stats.quizCorrect,10)}/10</span></div><div className="w-full rounded-full overflow-hidden" style={{height:6,background:'rgba(255,255,255,.06)'}}><div className="h-full rounded-full transition-all" style={{width:`${Math.min(stats.quizCorrect/10*100,100)}%`,background:'linear-gradient(90deg,#10b981,#6ee7b7)'}}/></div></div></div><p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{color:'#94a3b8'}}>Choose subject</p><div className="flex gap-2 overflow-x-auto day-tabs pb-3 mb-4"><button onClick={()=>setFilter('all')} className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold" style={{background:filter==='all'?'rgba(16,185,129,.15)':'rgba(255,255,255,.04)',border:`1px solid ${filter==='all'?'rgba(16,185,129,.3)':'rgba(255,255,255,.06)'}`,color:filter==='all'?'#6ee7b7':'#64748b'}}>All ({QUIZZES.length})</button>{subjects.map(s=><button key={s} onClick={()=>setFilter(s)} className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold" style={{background:filter===s?'rgba(16,185,129,.15)':'rgba(255,255,255,.04)',border:`1px solid ${filter===s?'rgba(16,185,129,.3)':'rgba(255,255,255,.06)'}`,color:filter===s?'#6ee7b7':'#64748b',whiteSpace:'nowrap'}}>{s} ({QUIZZES.filter(q=>q.s===s).length})</button>)}</div><button onClick={start} className="w-full py-3 rounded-xl font-heading font-semibold text-sm active:scale-95" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none'}}><Icon name="play" size={16} className="inline mr-1.5 -mt-0.5"/> Start Quiz</button></section>);
+  if(mode==='quiz'){const q=questions[cur];return(<section id="quiz" className="py-6 px-4 max-w-2xl mx-auto"><div className="glass p-5" style={{borderRadius:20}}><div className="flex items-center justify-between mb-3"><span className="text-xs font-semibold" style={{color:'#94a3b8'}}>Q{cur+1}/{questions.length}</span><span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{background:'rgba(16,185,129,.1)',color:'#6ee7b7'}}>{score} correct</span></div><div className="w-full rounded-full overflow-hidden mb-4" style={{height:4,background:'rgba(255,255,255,.06)'}}><div className="h-full rounded-full" style={{width:`${(cur+1)/questions.length*100}%`,background:'linear-gradient(90deg,#10b981,#6ee7b7)',transition:'.3s'}}/></div><span className="text-xs font-semibold px-2.5 py-1 rounded-full inline-block mb-3" style={{background:'rgba(16,185,129,.1)',color:'#6ee7b7'}}>{q.s}</span><h3 className="font-heading font-semibold text-base mb-5" style={{color:'#ecfdf5',lineHeight:1.5}}>{q.q}</h3><div className="space-y-2 mb-4">{q.o.map((o,i)=>{let bg='rgba(255,255,255,.04)',bd='rgba(255,255,255,.08)',tc='#d1fae5',op=1;if(ans!==null){if(i===q.c){bg='rgba(16,185,129,.15)';bd='#10b981';tc='#6ee7b7'}else if(i===ans&&i!==q.c){bg='rgba(239,68,68,.12)';bd='rgba(239,68,68,.4)';tc='#fca5a5'}else op=.4}return<button key={i} onClick={()=>answer(i)} className="w-full text-left px-4 py-3 rounded-xl text-sm font-medium" style={{background:bg,border:`1px solid ${bd}`,color:tc,opacity:op,borderRadius:14,transition:'.2s'}} disabled={ans!==null}><span className="mr-2 font-semibold" style={{color:ans!==null&&i===q.c?'#10b981':'#64748b'}}>{String.fromCharCode(65+i)}.</span>{o}{ans!==null&&i===q.c&&<span className="float-right"><Icon name="check" size={16} className="text-emerald-400"/></span>}</button>})}</div>{showNext&&<button onClick={next} className="w-full py-3 rounded-xl font-heading font-semibold text-sm active:scale-95" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none',animation:'fadeUp .3s ease'}}>{cur+1>=questions.length?'See Results':'Next'} <Icon name="chevron-right" size={16} className="inline -mt-0.5"/></button>}<button onClick={()=>setMode('select')} className="w-full mt-2 py-2 text-xs" style={{color:'#64748b',background:'transparent',border:'none'}}>Exit Quiz</button></div></section>);}
+  const pct=questions.length>0?Math.round(score/questions.length*100):0;
+  return(<section id="quiz" className="py-6 px-4 max-w-2xl mx-auto"><div className="glass p-6 text-center" style={{borderRadius:20,animation:'scaleIn .4s ease'}}><div className="mx-auto flex items-center justify-center rounded-full mb-4" style={{width:80,height:80,background:pct>=70?'rgba(16,185,129,.15)':'rgba(239,68,68,.1)',border:`2px solid ${pct>=70?'#10b981':'rgba(239,68,68,.3)'}`}}><Icon name={pct>=70?'trophy':'target'} size={36} className={pct>=70?'text-emerald-400':'text-red-400'}/></div><h2 className="font-heading font-bold text-3xl mb-1" style={{color:'#ecfdf5'}}>{score}/{questions.length}</h2><p className="font-heading font-bold text-4xl mb-2" style={{color:pct>=70?'#10b981':'#ef4444'}}>{pct}%</p><p className="text-sm mb-5" style={{color:'#94a3b8'}}>{pct>=90?'Outstanding!':pct>=70?'Great work!':pct>=50?'Good effort!':'Keep studying!'}</p><div className="flex gap-2"><button onClick={start} className="flex-1 py-3 rounded-xl font-heading font-semibold text-sm active:scale-95" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none'}}><Icon name="repeat" size={16} className="inline mr-1 -mt-0.5"/>Retry</button><button onClick={()=>setMode('select')} className="flex-1 py-3 rounded-xl font-heading font-semibold text-sm active:scale-95" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8'}}>New Quiz</button></div></div></section>);
+}
+
+/* ═══════════════════════════════════════════
+   ANALYTICS
+   ═══════════════════════════════════════════ */
+function Analytics(){
+  const[log,setLog]=useState({business:5,economics:4,english:6,math:7,lo:2,isizulu:3,sesotho:3,tshivenda:3,xitsonga:3,history:4});const[sel,setSel]=useState('business');const[r,v]=useInView();
+  const total=Object.values(log).reduce((a,b)=>a+b,0),maxD=Math.max(...WEEKLY.map(d=>d.h)),cH=140;
+  return(<section id="analytics" ref={r} className="py-6 px-4 max-w-2xl mx-auto"><div className={`space-y-4 ${v?'anim-fade-up':''}`}><div className="glass p-5" style={{borderRadius:20}}><div className="flex items-center justify-between mb-4"><div className="flex items-center gap-2"><Icon name="bar-chart" size={17} className="text-emerald-400"/><h3 className="font-heading font-semibold text-sm" style={{color:'#ecfdf5'}}>Weekly Study Hours</h3></div><span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{background:'rgba(16,185,129,.1)',color:'#6ee7b7'}}>{total}h</span></div><div className="flex items-end justify-between gap-1.5" style={{height:cH}}>{WEEKLY.map((d,i)=><div key={d.d} className="flex flex-col items-center flex-1 gap-1"><span className="text-xs font-semibold" style={{color:'#6ee7b7',fontSize:10}}>{d.h}</span><div className="w-full rounded-lg overflow-hidden" style={{height:`${d.h/maxD*(cH-40)}px`,background:'rgba(255,255,255,.04)',minHeight:6}}><div className="h-full rounded-lg" style={{background:'linear-gradient(to top,#059669,#34d399,#6ee7b7)',opacity:.8,transformOrigin:'bottom',animation:`scaleIn .5s ease ${i*.06}s forwards`,transform:'scaleY(0)'}}/></div><span className="text-xs font-medium" style={{color:'#64748b',fontSize:9}}>{d.d}</span></div>)}</div></div><div className="glass p-5" style={{borderRadius:20}}><div className="flex items-center gap-2 mb-3"><Icon name="timer" size={17} className="text-emerald-400"/><h3 className="font-heading font-semibold text-sm" style={{color:'#ecfdf5'}}>Log Study Time</h3></div><select value={sel} onChange={e=>setSel(e.target.value)} className="w-full mb-3 px-3 py-2 rounded-xl text-sm outline-none" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#ecfdf5'}}>{SUBJECTS.map(s=><option key={s.id} value={s.id} style={{background:'#0f172a'}}>{s.name}</option>)}</select><div className="flex items-center gap-3"><input type="range" min={0} max={12} step={.5} value={log[sel]} onChange={e=>setLog({...log,[sel]:parseFloat(e.target.value)})} className="range-slider flex-1"/><span className="font-heading font-bold text-lg min-w-[40px] text-right" style={{color:'#10b981'}}>{log[sel]}h</span></div></div></div></section>);
+}
+
+/* ═══════════════════════════════════════════
+   SUBJECT CARD
+   ═══════════════════════════════════════════ */
+function SubjectCard({s}){
+  const{stats,update}=useStats();const[open,setOpen]=useState(false);const[cardIdx,setCardIdx]=useState(0);const[flip,setFlip]=useState(false);const[r,v]=useInView();
+  const cards=FLASHCARDS[s.id]||[];const isLang=['isizulu','sesotho','tshivenda','xitsonga'].includes(s.id);
+  return(<div ref={r} className={`glass overflow-hidden ${v?'anim-fade-up':''}`} style={{borderRadius:18,borderTop:`3px solid ${s.color}`}}>
+    <div className="p-4 cursor-pointer" onClick={()=>{setOpen(!open);if(!open&&isLang){const l=stats.languages||[];if(!l.includes(s.id))update({languages:[...l,s.id]})}}}>
+      <div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2.5"><div className="flex items-center justify-center rounded-xl" style={{width:36,height:36,background:`${s.color}12`,border:`1px solid ${s.color}25`}}><Icon name={s.icon} size={18} style={{color:s.color}}/></div><div><h3 className="font-heading font-semibold text-sm" style={{color:'#ecfdf5'}}>{s.name}</h3><p className="text-xs" style={{color:'#64748b'}}>{s.hours}h · {cards.length} cards</p></div></div><Icon name={open?'chevron-up':'chevron-down'} size={16} className="text-slate-500"/></div>
+      <div className="flex justify-between mb-1"><span className="text-xs" style={{color:'#64748b'}}>Progress</span><span className="text-xs font-semibold" style={{color:s.color}}>{s.progress}%</span></div>
+      <div className="w-full rounded-full overflow-hidden" style={{height:5,background:'rgba(255,255,255,.06)'}}><div className="h-full rounded-full" style={{width:`${s.progress}%`,background:`linear-gradient(90deg,${s.color},${s.color}aa)`,transition:'.4s'}}/></div>
+    </div>
+    <div className={open?'vis-section':'hid-section'} style={{borderTop:open?'1px solid rgba(255,255,255,.05)':'none'}}>
+      <div className="p-4 space-y-3">
+        <div><h4 className="text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1" style={{color:'#94a3b8'}}><Icon name="download" size={12}/>Resources</h4><div className="flex flex-wrap gap-1.5">{s.resources.map((r,i)=><button key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium" style={{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.07)',color:'#d1fae5'}}>{r}</button>)}</div></div>
+        {cards.length>0&&<div><h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center justify-between" style={{color:'#94a3b8'}}><span className="flex items-center gap-1"><Icon name="brain" size={12}/>Flashcards</span><span style={{color:s.color}}>{cardIdx+1}/{cards.length}</span></h4>
+          <div className="flashcard cursor-pointer" onClick={e=>{e.stopPropagation();setFlip(!flip)}}><div className={`flashcard-inner ${flip?'flipped':''}`}><div className="flashcard-front" style={{background:`${s.color}10`,border:`1px solid ${s.color}20`}}><div><p className="text-xs font-medium mb-1" style={{color:'#ecfdf5'}}>{cards[cardIdx].q}</p><p style={{color:'#64748b',fontSize:10}}>Tap to reveal</p></div></div><div className="flashcard-back" style={{background:`${s.color}18`,border:`1px solid ${s.color}28`}}><p className="text-xs" style={{color:'#d1fae5'}}>{cards[cardIdx].a}</p></div></div></div>
+          {cards.length>1&&<div className="flex items-center justify-between mt-2"><button onClick={e=>{e.stopPropagation();setCardIdx(i=>(i-1+cards.length)%cards.length);setFlip(false)}} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8'}}>Prev</button><div className="flex gap-1">{cards.map((_,i)=><div key={i} className="rounded-full" style={{width:i===cardIdx?16:5,height:5,background:i===cardIdx?s.color:'rgba(255,255,255,.1)',transition:'.3s'}}/>)}</div><button onClick={e=>{e.stopPropagation();setCardIdx(i=>(i+1)%cards.length);setFlip(false)}} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8'}}>Next</button></div>}
+        </div>}
+        {s.vocab&&<div><h4 className="text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1" style={{color:'#94a3b8'}}><Icon name="languages" size={12}/>Vocabulary</h4><div className="space-y-1">{s.vocab.map((v,i)=><div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{background:'rgba(255,255,255,.03)'}}><div><span className="text-xs font-semibold" style={{color:'#ecfdf5'}}>{v.w}</span><span className="text-xs ml-1.5" style={{color:'#64748b',fontSize:10}}>({v.p})</span></div><span className="text-xs" style={{color:'#6ee7b7',fontSize:10}}>{v.m}</span></div>)}</div></div>}
+      </div>
+    </div>
+  </div>);
+}
+
+/* ═══════════════════════════════════════════
+   POMODORO
+   ═══════════════════════════════════════════ */
+function Pomodoro(){
+  const{stats,update}=useStats();const W=25*60,B=5*60;const[t,setT]=useState(W),[run,setRun]=useState(false),[mode,setMode]=useState('work');const ref=useRef(null);
+  useEffect(()=>{if(!run)return;ref.current=setInterval(()=>setT(p=>{if(p<=1){clearInterval(ref.current);if(mode==='work'){setMode('break');update({pomodoros:stats.pomodoros+1});return B}setMode('work');return W}return p-1}),1000);return()=>clearInterval(ref.current)},[run,mode]);
+  const pct=t/(mode==='work'?W:B),circ=2*Math.PI*42,off=circ*(1-pct),m=Math.floor(t/60),s=t%60;const[r,v]=useInView();
+  return(<section id="timer" ref={r} className={`py-6 px-4 max-w-2xl mx-auto ${v?'anim-fade-up':''}`}><div className="glass p-5 text-center" style={{borderRadius:20}}><div className="flex items-center justify-center gap-2 mb-4"><Icon name="timer" size={17} className="text-emerald-400"/><h3 className="font-heading font-semibold text-sm" style={{color:'#ecfdf5'}}>Focus Timer</h3></div><div className="inline-block mb-3"><svg width="160" height="160" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.05)" strokeWidth="4"/><circle cx="50" cy="50" r="42" fill="none" stroke="url(#tg)" strokeWidth="4" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={off} transform="rotate(-90 50 50)" style={{transition:'stroke-dashoffset 1s linear'}}/><defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6ee7b7"/><stop offset="100%" stopColor="#059669"/></linearGradient></defs><text x="50" y="46" textAnchor="middle" fill="#ecfdf5" fontSize="16" fontWeight="700" fontFamily="Outfit">{String(m).padStart(2,'0')}:{String(s).padStart(2,'0')}</text><text x="50" y="58" textAnchor="middle" fill="#64748b" fontSize="6" letterSpacing="1.5">{mode==='work'?'FOCUS':'BREAK'}</text></svg></div><div className="flex justify-center gap-2 mb-3"><button onClick={()=>setRun(!run)} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm active:scale-95" style={{background:'linear-gradient(135deg,#10b981,#059669)',color:'#fff',border:'none'}}><Icon name={run?'pause':'play'} size={15}/> {run?'Pause':'Start'}</button><button onClick={()=>{setRun(false);setMode('work');setT(W)}} className="flex items-center px-4 py-2.5 rounded-xl active:scale-95" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8'}}><Icon name="refresh" size={15}/></button></div><div className="flex items-center justify-center gap-4 text-xs" style={{color:'#64748b'}}><span className="flex items-center gap-1"><Icon name="target" size={12} className="text-emerald-400"/> Sessions: <strong style={{color:'#6ee7b7'}}>{stats.pomodoros}</strong></span><span className="flex items-center gap-1"><Icon name="flame" size={12} style={{color:'#f59e0b'}}/> Focus: <strong style={{color:'#fbbf24'}}>{Math.min(stats.pomodoros,5)}/5</strong></span></div></div></section>);
+}
+
+/* ═══════════════════════════════════════════
+   LOFI
+   ═══════════════════════════════════════════ */
+function Lofi(){
+  const[play,setPlay]=useState(false),[mode,setMode]=useState('lofi');const ctxRef=useRef(null),nodesRef=useRef([]);
+  const modes=[{id:'lofi',name:'Lofi',icon:'music'},{id:'rain',name:'Rain',icon:'coffee'},{id:'forest',name:'Forest',icon:'sparkles'}];
+  const start=useCallback(t=>{if(ctxRef.current)ctxRef.current.close();const ctx=new(window.AudioContext||window.webkitAudioContext)();ctxRef.current=ctx;nodesRef.current=[];
+    if(t==='lofi'){[220,277.18,329.63].forEach((f,i)=>{const o=ctx.createOscillator();o.type='sine';o.frequency.value=f;o.detune.value=(Math.random()-.5)*5;const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=500+i*100;const g=ctx.createGain();g.gain.value=.02;o.connect(fl);fl.connect(g);g.connect(ctx.destination);o.start();nodesRef.current.push(o)})}
+    else if(t==='rain'){const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),d=b.getChannelData(0);let la=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;d[i]=(la+.02*w)/1.02;la=d[i];d[i]*=3}const s=ctx.createBufferSource();s.buffer=b;s.loop=true;const fl=ctx.createBiquadFilter();fl.type='bandpass';fl.frequency.value=700;const g=ctx.createGain();g.gain.value=.1;s.connect(fl);fl.connect(g);g.connect(ctx.destination);s.start();nodesRef.current.push(s)}
+    else{const b=ctx.createBuffer(1,ctx.sampleRate*4,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*.008;for(let h=1;h<=4;h++)d[i]+=Math.sin(i*h*.001)*.004/h}const s=ctx.createBufferSource();s.buffer=b;s.loop=true;const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=350;const g=ctx.createGain();g.gain.value=.12;s.connect(fl);fl.connect(g);g.connect(ctx.destination);s.start();nodesRef.current.push(s)}},[]);
+  const stop=useCallback(()=>{nodesRef.current.forEach(n=>{try{n.stop()}catch(e){}});nodesRef.current=[];if(ctxRef.current){ctxRef.current.close();ctxRef.current=null}},[]);
+  const toggle=useCallback(()=>{if(play){stop();setPlay(false)}else{start(mode);setPlay(true)}},[play,mode,start,stop]);
+  const switchM=useCallback(m=>{setMode(m);if(play){stop();start(m)}},[play,start,stop]);
+  useEffect(()=>()=>stop(),[stop]);const[r,v]=useInView();
+  return(<section id="sounds" ref={r} className={`py-6 px-4 max-w-2xl mx-auto ${v?'anim-fade-up':''}`}><div className="glass p-5" style={{borderRadius:20}}><div className="flex items-center justify-between mb-4"><div className="flex items-center gap-2"><Icon name="volume" size={17} className="text-emerald-400"/><h3 className="font-heading font-semibold text-sm" style={{color:'#ecfdf5'}}>Ambient Sounds</h3></div>{play&&<div className="w-2 h-2 rounded-full" style={{background:'#10b981',animation:'pulse 1.5s infinite'}}/>}</div><div className="flex items-end justify-center gap-[2px] h-12 mb-4">{Array.from({length:20},(_,i)=><div key={i} className="rounded-full" style={{width:3,height:play?`${15+Math.random()*85}%`:'8%',background:'linear-gradient(to top,#059669,#6ee7b7)',opacity:play?.7:.15,animation:play?`barAnim ${.4+Math.random()*.5}s ease infinite alternate`:'none',animationDelay:`${i*.03}s`,'--h':`${20+Math.random()*80}%`}}/>)}</div><div className="flex gap-2 mb-4">{modes.map(m=><button key={m.id} onClick={()=>switchM(m.id)} className="flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-medium active:scale-95" style={{background:mode===m.id?'rgba(16,185,129,.12)':'rgba(255,255,255,.03)',border:`1px solid ${mode===m.id?'rgba(16,185,129,.25)':'rgba(255,255,255,.05)'}`,color:mode===m.id?'#6ee7b7':'#64748b'}}><Icon name={m.icon} size={15}/>{m.name}</button>)}</div><button onClick={toggle} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm active:scale-95" style={{background:play?'rgba(255,255,255,.06)':'linear-gradient(135deg,#10b981,#059669)',border:play?'1px solid rgba(255,255,255,.08)':'none',color:'#fff'}}><Icon name={play?'pause':'play'} size={16}/> {play?'Pause':'Play'}</button></div></section>);
+}
+
+/* ═══════════════════════════════════════════
+   CLASS CHATROOM (NEW)
+   ═══════════════════════════════════════════ */
+function Chatroom(){
+  const{user}=useAuth();
+  const[msg,setMsg]=useState('');
+  const[msgs,setMsgs]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const scrollRef=useRef(null);
+  const[r,v]=useInView();
+
+  useEffect(()=>{
+    const unsub=db.collection('chat').orderBy('timestamp','asc').limitToLast(200).onSnapshot(snap=>{
+      setMsgs(snap.docs.map(d=>({id:d.id,...d.data()})));
+      setLoading(false);
+    },()=>setLoading(false));
+    return unsub;
+  },[]);
+
+  useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight},[msgs]);
+
+  const send=async()=>{
+    if(!msg.trim()||!user)return;
+    const text=msg.trim();setMsg('');
+    try{await db.collection('chat').add({
+      userId:user.uid,displayName:user.displayName||user.email.split('@')[0],
+      text,timestamp:firebase.firestore.FieldValue.serverTimestamp(),
+      color:uidColor(user.uid)
+    })}catch(e){console.error(e)}
+  };
+
+  const del=async id=>{try{await db.collection('chat').doc(id).delete()}catch(e){console.error(e)}};
+
+  return(
+    <section id="chatroom" ref={r} className={`py-6 px-4 max-w-2xl mx-auto ${v?'anim-fade-up':''}`}>
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="message-circle" size={16} className="text-emerald-400"/></div>
+        <div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Class Chatroom</h2><p className="text-xs" style={{color:'#64748b'}}>Real-time class conversation</p></div>
+        <div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{background:'rgba(16,185,129,.08)',border:'1px solid rgba(16,185,129,.15)'}}><div className="w-1.5 h-1.5 rounded-full" style={{background:'#10b981',animation:'pulse 2s infinite'}}/><span className="text-xs font-medium" style={{color:'#6ee7b7'}}>Live</span></div>
+      </div>
+
+      <div className="glass overflow-hidden" style={{borderRadius:20}}>
+        {/* Messages */}
+        <div ref={scrollRef} className="chat-scroll" style={{height:400,overflowY:'auto',padding:'16px'}}>
+          {loading?<div className="flex items-center justify-center h-full"><div style={{width:24,height:24,border:'3px solid rgba(16,185,129,.2)',borderTopColor:'#10b981',borderRadius:'50%',animation:'spin .8s linear infinite'}}/></div>:
+          msgs.length===0?<div className="flex flex-col items-center justify-center h-full"><Icon name="message-circle" size={32} style={{color:'#475569'}}/><p className="text-xs mt-2" style={{color:'#475569'}}>No messages yet. Say hi!</p></div>:
+          <div className="space-y-3">
+            {msgs.map((m,i)=>{
+              const mine=m.userId===user.uid;
+              return<div key={m.id} className={`flex ${mine?'justify-end':'justify-start'}`} style={{animation:'fadeUp .3s ease forwards',opacity:0,animationDelay:`${Math.min(i*.02,.5)}s`}}>
+                <div className={`flex gap-2 ${mine?'flex-row-reverse':''}`} style={{maxWidth:'80%'}}>
+                  {!mine&&<div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mt-0.5" style={{background:`${m.color||'#10b981'}20`,color:m.color||'#10b981'}}>{(m.displayName||'?')[0].toUpperCase()}</div>}
+                  <div>
+                    {!mine&&<p className="text-xs font-semibold mb-0.5 px-1" style={{color:m.color||'#6ee7b7'}}>{m.displayName||'Anonymous'}</p>}
+                    <div className="px-3.5 py-2.5" style={{
+                      background:mine?'linear-gradient(135deg,#10b981,#059669)':'rgba(255,255,255,.06)',
+                      border:mine?'none':'1px solid rgba(255,255,255,.06)',
+                      borderRadius:mine?'16px 16px 4px 16px':'16px 16px 16px 4px'
+                    }}>
+                      <p className="text-sm" style={{color:mine?'#fff':'#d1fae5',lineHeight:1.5,wordBreak:'break-word'}}>{m.text}</p>
+                    </div>
+                    <div className={`flex items-center gap-1.5 mt-0.5 px-1 ${mine?'justify-end':''}`}>
+                      <span style={{color:'#475569',fontSize:9}}>{timeAgo(m.timestamp)}</span>
+                      {mine&&<button onClick={()=>del(m.id)} style={{background:'transparent',border:'none',cursor:'pointer',padding:0,lineHeight:1}}><Icon name="trash" size={10} style={{color:'#475569'}}/></button>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            })}
+          </div>}
+        </div>
+
+        {/* Compose */}
+        <div style={{borderTop:'1px solid rgba(255,255,255,.06)',padding:'12px 16px'}}>
+          <div className="flex gap-2">
+            <input value={msg} onChange={e=>setMsg(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')send()}} placeholder="Type a message..." className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#ecfdf5'}}/>
+            <button onClick={send} className="flex items-center justify-center rounded-xl active:scale-95" style={{width:44,height:44,background:'linear-gradient(135deg,#10b981,#059669)',border:'none',flexShrink:0}}><Icon name="send" size={18} className="text-white"/></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   CLASS WALL
+   ═══════════════════════════════════════════ */
+function ClassWall(){
+  const{user}=useAuth();const{stats,update}=useStats();const[msg,setMsg]=useState('');const[posts,setPosts]=useState([]);const[loadingPosts,setLoading]=useState(true);const[r,v]=useInView();
+  useEffect(()=>{const unsub=db.collection('messages').orderBy('timestamp','desc').limit(50).onSnapshot(snap=>{setPosts(snap.docs.map(d=>({id:d.id,...d.data()})));setLoading(false)},()=>setLoading(false));return unsub},[]);
+  const send=async()=>{if(!msg.trim()||!user)return;const text=msg.trim();setMsg('');try{await db.collection('messages').add({userId:user.uid,displayName:user.displayName||user.email.split('@')[0],text,timestamp:firebase.firestore.FieldValue.serverTimestamp(),color:uidColor(user.uid)});update({postsCount:stats.postsCount+1})}catch(e){console.error(e)}};
+  const del=async id=>{try{await db.collection('messages').doc(id).delete()}catch(e){console.error(e)}};
+  const rots=[-2,1.5,-1,2.5,-1.5,.8];
+  return(<section id="wall" ref={r} className={`py-6 px-4 max-w-4xl mx-auto ${v?'anim-fade-up':''}`}>
+    <div className="flex items-center gap-2.5 mb-5"><div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="message-square" size={16} className="text-emerald-400"/></div><div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Class Wall</h2><p className="text-xs" style={{color:'#64748b'}}>Post notes for the class</p></div><div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{background:'rgba(16,185,129,.08)',border:'1px solid rgba(16,185,129,.15)'}}><div className="w-1.5 h-1.5 rounded-full" style={{background:'#10b981',animation:'pulse 2s infinite'}}/><span className="text-xs font-medium" style={{color:'#6ee7b7'}}>Live</span></div></div>
+    <div className="glass p-4 mb-5" style={{borderRadius:18}}><div className="flex items-center gap-2 mb-3"><div className="flex items-center justify-center rounded-full flex-shrink-0" style={{width:32,height:32,background:`${uidColor(user.uid)}20`,color:uidColor(user.uid),fontSize:13,fontWeight:700,fontFamily:'Outfit'}}>{(user.displayName||user.email||'?')[0].toUpperCase()}</div><span className="text-sm font-medium" style={{color:'#ecfdf5'}}>{user.displayName||user.email.split('@')[0]}</span></div><div className="flex gap-2"><input value={msg} onChange={e=>setMsg(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')send()}} placeholder="Share something with the class..." className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#ecfdf5'}}/><button onClick={send} className="flex items-center justify-center rounded-xl active:scale-95" style={{width:44,height:44,background:'linear-gradient(135deg,#10b981,#059669)',border:'none',flexShrink:0}}><Icon name="send" size={18} className="text-white"/></button></div></div>
+    {loadingPosts?<div className="text-center py-8"><div style={{width:28,height:28,border:'3px solid rgba(16,185,129,.2)',borderTopColor:'#10b981',borderRadius:'50%',animation:'spin .8s linear infinite',margin:'0 auto'}}/></div>:
+    posts.length===0?<div className="glass p-8 text-center" style={{borderRadius:18}}><Icon name="message-square" size={32} className="text-emerald-400 mx-auto mb-2" style={{opacity:.3}}/><p className="text-sm" style={{color:'#64748b'}}>No messages yet. Be the first to post!</p></div>:
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{posts.map((p,i)=>{const isMine=p.userId===user.uid;return<div key={p.id} className="glass p-3.5 transition-transform" style={{borderRadius:16,borderLeft:`3px solid ${p.color||'#10b981'}`,transform:`rotate(${rots[i%rots.length]}deg)`,transition:'.25s'}} onMouseEnter={e=>e.currentTarget.style.transform='rotate(0)'} onMouseLeave={e=>e.currentTarget.style.transform=`rotate(${rots[i%rots.length]}deg)`}><div className="flex items-center justify-between mb-1.5"><div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{background:`${p.color||'#10b981'}20`,color:p.color||'#10b981'}}>{(p.displayName||'?')[0].toUpperCase()}</div><span className="text-xs font-semibold" style={{color:'#ecfdf5'}}>{p.displayName||'Anonymous'}</span></div><div className="flex items-center gap-2"><span className="text-xs" style={{color:'#475569',fontSize:9}}>{timeAgo(p.timestamp)}</span>{isMine&&<button onClick={()=>del(p.id)} style={{background:'transparent',border:'none',color:'#475569',cursor:'pointer',padding:2}}><Icon name="trash" size={12}/></button>}</div></div><p className="text-xs" style={{color:'#cbd5e1',lineHeight:1.5}}>{p.text}</p></div>})}</div>}
+  </section>);
+}
+
+/* ═══════════════════════════════════════════
+   BADGES
+   ═══════════════════════════════════════════ */
+function Badges(){
+  const{stats}=useStats();const[r,v]=useInView();
+  const badges=[{id:'early',name:'Early Bird',desc:'Study before 8 AM',icon:'sunrise',ok:stats.earliestStudy,progress:stats.earliestStudy?100:0},{id:'night',name:'Night Owl',desc:'Study after 10 PM',icon:'moon',ok:stats.latestStudy,progress:stats.latestStudy?100:0},{id:'streak',name:'7-Day Streak',desc:'Study every day',icon:'flame',ok:stats.streakDays>=7,progress:Math.min(stats.streakDays/7*100,100),detail:`${stats.streakDays||0}/7 days`},{id:'focus',name:'Focus Champ',desc:'5 Pomodoros done',icon:'target',ok:stats.pomodoros>=5,progress:Math.min(stats.pomodoros/5*100,100),detail:`${stats.pomodoros}/5 sessions`},{id:'polyglot',name:'Polyglot',desc:'3+ languages',icon:'globe',ok:(stats.languages||[]).length>=3,progress:Math.min((stats.languages||[]).length/3*100,100),detail:`${(stats.languages||[]).length}/3`},{id:'bookworm',name:'Bookworm',desc:'20+ hours/week',icon:'book-open',ok:stats.studyHours>=20,progress:Math.min(stats.studyHours/20*100,100),detail:`${stats.studyHours}h`},{id:'quiz',name:'Quiz Master',desc:'10 correct answers',icon:'brain',ok:stats.quizCorrect>=10,progress:Math.min(stats.quizCorrect/10*100,100),detail:`${stats.quizCorrect}/10`},{id:'social',name:'Team Player',desc:'5 posts made',icon:'users',ok:stats.postsCount>=5,progress:Math.min(stats.postsCount/5*100,100),detail:`${stats.postsCount}/5`}];
+  const earned=badges.filter(b=>b.ok).length;
+  return(<section id="badges" ref={r} className={`py-6 px-4 max-w-4xl mx-auto ${v?'anim-fade-up':''}`}>
+    <div className="flex items-center gap-2.5 mb-2"><div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="award" size={16} className="text-emerald-400"/></div><div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Achievements</h2><p className="text-xs" style={{color:'#64748b'}}>Earned through real activity</p></div></div>
+    <div className="glass p-3 mb-5 mt-3" style={{borderRadius:14}}><div className="flex items-center justify-between"><span className="text-xs" style={{color:'#94a3b8'}}>Progress</span><span className="text-xs font-bold" style={{color:'#6ee7b7'}}>{earned}/{badges.length}</span></div><div className="w-full rounded-full overflow-hidden mt-2" style={{height:6,background:'rgba(255,255,255,.06)'}}><div className="h-full rounded-full" style={{width:`${earned/badges.length*100}%`,background:'linear-gradient(90deg,#10b981,#6ee7b7)',transition:'.5s'}}/></div></div>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{badges.map(b=><div key={b.id} className={`glass p-3 text-center transition-all ${b.ok?'glass-hover':''}`} style={{borderRadius:18,borderTop:b.ok?'2px solid #10b981':'2px solid rgba(255,255,255,.04)',opacity:b.ok?1:.5}}><div className="mx-auto mb-2 flex items-center justify-center rounded-full" style={{width:44,height:44,background:b.ok?'rgba(16,185,129,.12)':'rgba(255,255,255,.03)',border:`1px solid ${b.ok?'rgba(16,185,129,.25)':'rgba(255,255,255,.05)'}`}}><Icon name={b.icon} size={20} className={b.ok?'text-emerald-400':'text-slate-600'}/></div><h4 className="font-heading font-semibold text-xs mb-0.5" style={{color:b.ok?'#ecfdf5':'#475569'}}>{b.name}</h4><p className="text-xs mb-2" style={{color:b.ok?'#64748b':'#334155',fontSize:9}}>{b.desc}</p><div className="w-full rounded-full overflow-hidden mb-1" style={{height:3,background:'rgba(255,255,255,.06)'}}><div className="h-full rounded-full" style={{width:`${b.progress}%`,background:b.ok?'#10b981':'rgba(16,185,129,.3)',transition:'.5s'}}/></div><span className="text-xs" style={{color:b.ok?'#6ee7b7':'#475569',fontSize:9}}>{b.ok?'Earned':b.detail||`${Math.round(b.progress)}%`}</span></div>)}</div>
+  </section>);
+}
+
+/* ═══════════════════════════════════════════
+   AI CHAT
+   ═══════════════════════════════════════════ */
+function AIChat(){
+  const[open,setOpen]=useState(false);const[msgs,setMsgs]=useState([{id:1,role:'ai',text:"Welcome! I can help with quizzes, study tips, and subject guidance.\n\nTry the Quizzes section for interactive tests!"}]);const[input,setInput]=useState('');const[typing,setTyping]=useState(false);const scrollRef=useRef(null),inputRef=useRef(null);
+  useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight},[msgs,typing]);
+  useEffect(()=>{if(open&&inputRef.current)setTimeout(()=>inputRef.current.focus(),300)},[open]);
+  const send=(text)=>{if(!text.trim())return;setMsgs(p=>[...p,{id:Date.now(),role:'user',text:text.trim()}]);setInput('');setTyping(true);setTimeout(()=>{const r=getAI(text);setMsgs(p=>[...p,typeof r==='object'?{id:Date.now()+1,role:'ai',text:`Quiz: (${r.data.s})\n\n${r.data.q}`,quiz:r.data}:{id:Date.now()+1,role:'ai',text:r}]);setTyping(false)},800+Math.random()*600)};
+  const answerQuiz=(qi,ans)=>{setMsgs(p=>p.map(m=>m.quiz===qi?{...m,answered:ans}:m));setTimeout(()=>{setMsgs(p=>[...p,{id:Date.now(),role:'ai',text:ans===qi.c?`Correct! ${qi.o[qi.c]}`:`Answer: ${qi.o[qi.c]}`}])},400)};
+  return(<>
+    {!open&&<button onClick={()=>setOpen(true)} className="fixed flex items-center justify-center rounded-full" style={{bottom:20,right:20,zIndex:90,width:56,height:56,background:'linear-gradient(135deg,#10b981,#059669)',boxShadow:'0 4px 20px rgba(16,185,129,.35)',animation:'glow 2.5s ease-in-out infinite',border:'none'}}><Icon name="brain" size={26} className="text-white"/></button>}
+    {open&&<div className="fixed" style={{inset:0,zIndex:95,display:'flex',flexDirection:'column'}}><div onClick={()=>setOpen(false)} className="absolute inset-0" style={{background:'rgba(0,0,0,.4)'}}/><div className="relative glass flex flex-col self-end w-full" style={{maxWidth:440,height:'78vh',maxHeight:600,margin:'12px',borderRadius:20,animation:'slideUp .35s cubic-bezier(.4,0,.2,1)'}}>
+      <div className="flex items-center justify-between p-4" style={{borderBottom:'1px solid rgba(255,255,255,.06)'}}><div className="flex items-center gap-2.5"><div className="flex items-center justify-center rounded-xl" style={{width:36,height:36,background:'linear-gradient(135deg,#10b981,#059669)'}}><Icon name="brain" size={20} className="text-white"/></div><div><h3 className="font-heading font-semibold text-sm" style={{color:'#ecfdf5'}}>AI Study Assistant</h3><div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full" style={{background:'#10b981'}}/><span className="text-xs" style={{color:'#6ee7b7'}}>Online</span></div></div></div><button onClick={()=>setOpen(false)} className="flex items-center justify-center rounded-full" style={{width:32,height:32,background:'rgba(255,255,255,.06)'}}><Icon name="x" size={16} className="text-slate-400"/></button></div>
+      <div ref={scrollRef} className="flex-1 p-4 space-y-3 chat-scroll" style={{overflowY:'auto'}}>{msgs.map(m=><div key={m.id} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}><div className={m.role==='user'?'':'flex gap-2 items-start'}>{m.role==='ai'&&<div className="flex-shrink-0 flex items-center justify-center rounded-lg mt-0.5" style={{width:24,height:24,background:'rgba(16,185,129,.15)'}}><Icon name="bot" size={14} className="text-emerald-400"/></div>}<div className="rounded-2xl px-3.5 py-2.5 max-w-[85%]" style={{background:m.role==='user'?'linear-gradient(135deg,#10b981,#059669)':'rgba(255,255,255,.06)',border:m.role==='user'?'none':'1px solid rgba(255,255,255,.06)',borderRadius:m.role==='user'?'18px 18px 4px 18px':'18px 18px 18px 4px'}}><p className="text-sm whitespace-pre-line" style={{color:m.role==='user'?'#fff':'#d1fae5',lineHeight:1.5}}>{m.text}</p>{m.quiz&&m.answered===undefined&&<div className="mt-2 space-y-1.5">{m.quiz.o.map((o,i)=><button key={i} onClick={()=>answerQuiz(m.quiz,i)} className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium" style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',color:'#d1fae5',transition:'.2s'}}>{String.fromCharCode(65+i)}) {o}</button>)}</div>}</div></div></div>)}{typing&&<div className="flex gap-2 items-start"><div className="flex-shrink-0 flex items-center justify-center rounded-lg" style={{width:24,height:24,background:'rgba(16,185,129,.15)'}}><Icon name="bot" size={14} className="text-emerald-400"/></div><div className="rounded-2xl px-4 py-3 flex gap-1.5" style={{background:'rgba(255,255,255,.06)'}}>{[0,1,2].map(i=><div key={i} className="rounded-full" style={{width:6,height:6,background:'#6ee7b7',animation:`typing .6s ease ${i*.12}s infinite`}}/>)}</div></div>}</div>
+      <div className="px-4 pb-2 flex gap-2 overflow-x-auto day-tabs">{['Quiz me','Study tips','Motivate me','Help'].map(q=><button key={q} onClick={()=>send(q)} className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium active:scale-95" style={{background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)',color:'#6ee7b7',whiteSpace:'nowrap'}}>{q}</button>)}</div>
+      <div className="p-3" style={{borderTop:'1px solid rgba(255,255,255,.06)'}}><div className="flex gap-2"><input ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')send(input)}} placeholder="Ask me anything..." className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'#ecfdf5'}}/><button onClick={()=>send(input)} className="flex items-center justify-center rounded-xl active:scale-95" style={{width:44,height:44,background:'linear-gradient(135deg,#10b981,#059669)',border:'none',flexShrink:0}}><Icon name="send" size={18} className="text-white"/></button></div></div>
+    </div></div>}
+  </>);
+}
+
+function Footer(){return(<footer className="py-10 px-4 text-center" style={{borderTop:'1px solid rgba(255,255,255,.04)'}}><div className="flex items-center justify-center gap-2 mb-2"><div className="flex items-center justify-center rounded-lg" style={{width:24,height:24,background:'linear-gradient(135deg,#10b981,#059669)'}}><Icon name="graduation-cap" size={14} className="text-white"/></div><span className="font-heading font-bold text-sm" style={{color:'#ecfdf5'}}>11D Hub</span></div><p className="text-xs" style={{color:'#475569'}}>Built for Class 11D</p></footer>)}
+
+function ScrollTop(){const[s,setS]=useState(false);useEffect(()=>{const h=()=>setS(window.scrollY>400);window.addEventListener('scroll',h,{passive:true});return()=>window.removeEventListener('scroll',h)},[]);if(!s)return null;return <button onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="fixed flex items-center justify-center rounded-full" style={{bottom:84,right:20,zIndex:40,width:40,height:40,background:'rgba(16,185,129,.15)',border:'1px solid rgba(16,185,129,.25)',backdropFilter:'blur(12px)'}}><Icon name="arrow-up" size={18} className="text-emerald-400"/></button>}
+
+/* ═══════════════════════════════════════════
+   MAIN APP
+   ═══════════════════════════════════════════ */
+function MainApp(){
+  const[menu,setMenu]=useState(false);
+  const navTo=id=>{setMenu(false);setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),350)};
+  return(
+    <StatsProvider>
+      <div className="relative min-h-screen" style={{paddingBottom:80}}>
+        <SlideMenu open={menu} onClose={()=>setMenu(false)} onNav={navTo}/>
+        <Header onMenu={()=>setMenu(true)}/>
+        <main>
+          <Hero/>
+          <Timetable/>
+          <HomeworkSection/>
+          <MarksSection/>
+          <Analytics/>
+          <section id="subjects" className="py-6 px-4 max-w-5xl mx-auto">
+            <div className="flex items-center gap-2.5 mb-5"><div className="flex items-center justify-center rounded-xl" style={{width:32,height:32,background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.2)'}}><Icon name="book-open" size={16} className="text-emerald-400"/></div><div><h2 className="font-heading font-bold text-lg" style={{color:'#ecfdf5'}}>Subject Modules</h2><p className="text-xs" style={{color:'#64748b'}}>Flashcards, resources & vocabulary</p></div></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{SUBJECTS.map(s=><SubjectCard key={s.id} s={s}/>)}</div>
+          </section>
+          <QuizSection/>
+          <Pomodoro/>
+          <Lofi/>
+          <Chatroom/>
+          <ClassWall/>
+          <Badges/>
+        </main>
+        <Footer/>
+        <AIChat/>
+        <ScrollTop/>
+      </div>
+    </StatsProvider>
+  );
+}
+
+function AppRouter(){
+  const{user,loading}=useAuth();
+  if(loading)return(<div className="fixed inset-0 flex items-center justify-center" style={{background:'#060b14'}}><div className="text-center"><div style={{width:40,height:40,border:'3px solid rgba(16,185,129,.2)',borderTopColor:'#10b981',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px'}}/><p className="font-heading" style={{color:'#6ee7b7',fontSize:13,letterSpacing:3,textTransform:'uppercase'}}>11D Hub</p></div></div>);
+  if(!user)return <LoginScreen/>;
+  return <MainApp/>;
+}
+
+function App(){return <AuthProvider><TeacherProvider><AppRouter/></TeacherProvider></AuthProvider>}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
